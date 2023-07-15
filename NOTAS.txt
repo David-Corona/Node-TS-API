@@ -1,0 +1,35 @@
+
+
+// nodemon server
+npm run dev
+
+
+Comandos sequelize:
+// crear modelos
+sequelize model:create --name usuario --attributes nombre:string,email:string
+ // crear seed
+sequelize seed:generate --name seed-usuarios
+// ejecutar migraciones
+sequelize db:migrate 
+// ejectuar seeds
+sequelize db:seed:all 
+
+
+Pendiente:
+- Variables BD, usar config
+- Crear ENVs => dotenv? 
+- Auth JWT
+
+
+
+
+Enlaces útiles:
+
+https://sequelize.org/docs/v6/core-concepts/model-basics/
+
+https://www.bezkoder.com/node-js-express-sequelize-mysql/
+
+https://dev.to/julfikarhaidar/rest-apis-example-with-sequelize-orm-with-node-js-and-express-p40
+
+https://tomasmalio.medium.com/node-js-express-y-mysql-con-sequelize-ec0a7c0ae292
+

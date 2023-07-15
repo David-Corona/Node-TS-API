@@ -1,0 +1,23 @@
+{
+    "testing": {
+        "username": "root",
+        "password": "Enero100190!",
+        "database": "juego",
+        "host": "localhost",
+        "dialect": "mysql"
+    },
+    "development": {
+        "username": "root",
+        "password": "Enero100190!",
+        "database": "juego",
+        "host": "localhost",
+        "dialect": "mysql"
+    },
+    "producution": {
+        "username": "root",
+        "password": "123456",
+        "database": "ejemplosequelize",
+        "host": "127.0.0.1",
+        "dialect": "mysql"
+    }
+}
