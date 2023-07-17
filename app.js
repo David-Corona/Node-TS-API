@@ -4,14 +4,16 @@ const app = express(); // ejecuta el paquete como una funcion y devuelve una app
 const Sequelize = require("sequelize");
 // const bodyParser = require("body-parser");
 const dbConfig = require("./config/config.json");
-// const cors = require("cors");
+const cors = require("cors");
 
 const usuariosRoutes = require("./routes/usuarios.routes");
 
+app.use(cors()); // TODO, esto permite todas las conexiones.
 // var corsOptions = {
 //     origin: "https://localhost:3000"
 // };
 // app.use(cors(corsOptions));
+
 
 // app.use(bodyParser.json()); //mean 
 // parse requests of content-type - application/json
@@ -48,6 +50,6 @@ app.use((req, res, next) => {
 //     res.send("Hello testing")
 // });
 
-app.use("/usuarios", usuariosRoutes);
+app.use("/api/usuarios", usuariosRoutes);
 
 module.exports = app; // exporta app + middlewares

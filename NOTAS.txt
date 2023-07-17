@@ -2,7 +2,7 @@
 
 // nodemon server
 npm run dev
-
+=> http://localhost:3000/api
 
 Comandos sequelize:
 // crear modelos

@@ -9,12 +9,12 @@ const Usuario = require('../models').usuario;
 
 
 
-exports.index = (req, res, next) => {
-    res.status(200).json({
-        message: "Testeando desde usuarios controller",
-        // result: result
-    })
-};
+// exports.index = (req, res, next) => {
+//     res.status(200).json({
+//         message: "Testeando desde usuarios controller",
+//         // result: result
+//     })
+// };
 
 
 exports.findAll = (req, res) => {
