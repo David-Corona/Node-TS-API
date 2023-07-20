@@ -18,7 +18,7 @@ app.use(express.json()); // parse requests de tipo json
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
 
-// TODO: Mover datos a config > dbconfig + implementar ENVs
+// TODO: Mover datos a config > dbconfig / implementar ENVs
 const sequelize = new Sequelize(
     'juego',
     'root',

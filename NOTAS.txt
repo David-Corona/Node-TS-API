@@ -19,8 +19,8 @@ sequelize db:seed:all
 
 Pendiente:
 - Variables BD, usar config
-- Crear ENVs => dotenv? 
-- Auth JWT => crear llogin
+- Crear ENVs => dotenv / nodemon (mean)
+- Auth JWT => crear login
 
 
 

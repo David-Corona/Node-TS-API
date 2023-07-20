@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-// const Op = db.Sequelize.Op;
+
 const Usuario = require('../models').usuario;
 
 
@@ -29,42 +29,39 @@ exports.registro = (req, res) => {
         });
 };
 
-exports.login = (req, res, next) => {
-
-
-
-//   let fetchedUser;
-//   User.findOne({ email: req.body.email})
-//     .then(user => {
-//       if (!user) { // if user doesn't exist, undefined
-//         return res.status(401).json({
-//           message: "Auth failed!"
-//         });
-//       }
-//       fetchedUser = user;
-//       return bcrypt.compare(req.body.password, user.password); // compare password is correct
-//     })
-//     .then(validPass => { // result will be true/false depending on previous compare
-//       if (!validPass) {
-//         return res.status(401).json({
-//           message: "Auth failed, incorrect credentials."
-//         });
-//       }
-//       const token = jwt.sign( // creates new token
-//         { email: fetchedUser.email, userId: fetchedUser._id},
-//         process.env.JWT_KEY, // string used to hash, should be a very long string
-//         { expiresIn: "1h"}
-//       );
-//       res.status(200).json({
-//         token: token,
-//         expiresIn: 3600,
-//         userId: fetchedUser._id
-//       })
-//     })
-//     .catch(err => {
-//       return res.status(401).json({
-//         message: "Invalid authentication credentials!"
-//       });
-//     })
-
-}
+exports.login = (req, res) => {
+    let fetchedUser;
+    Usuario.findOne({ email: req.body.email })
+        .then(user => {
+            if (!user) {
+                return res.status(404).json({
+                    message: "Usuario no encontrado."
+                });
+            }
+            fetchedUser = user;
+            return bcrypt.compare(req.body.password, user.password);
+        })
+        .then(validPass => { // boolean
+            if (!validPass) {
+                return res.status(401).json({
+                    message: "Las credenciales son incorrectas."
+                });
+            }
+            const token = jwt.sign(
+                { email: fetchedUser.email, userId: fetchedUser._id },
+                "secret_or_private_key_provisional_a_modificar_y_agregar_a_env", // TODO: mover a env
+                { expiresIn: "1h" } // TODO: tiempo?
+            );
+            return res.status(200).json({
+                token: token,
+                expiresIn: 3600, // TODO: tiempo?
+                usuario_id: fetchedUser._id
+            })
+        })
+        .catch(e => {
+            return res.status(404).json({
+                message: "Error al intentar loguear.",
+                error: e
+            });
+        });
+};
