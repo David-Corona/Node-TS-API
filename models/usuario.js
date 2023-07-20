@@ -5,9 +5,6 @@ const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
-    /**
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
       // define association here
     }
@@ -25,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     }, 
     email: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      unique: true
     },
     password: {
       type: DataTypes.STRING,
@@ -33,15 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {
     sequelize, // We need to pass the connection instance
-    modelName: 'Usuario', // We need to choose the model name
+    modelName: 'Usuario', 
   });
-  // const Usuario = sequelize.define('usuario', {
-  //   id: DataTypes.INTEGER,
-  //   username: DataTypes.STRING,
-  //   status: DataTypes.CHAR
-  // }, {});
-  // Usuario.associate = function(models) {
-  //     // associations can be defined here
-  // };
+
   return Usuario;
 };

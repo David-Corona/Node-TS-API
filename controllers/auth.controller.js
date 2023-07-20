@@ -1,10 +1,8 @@
 const bcrypt = require("bcrypt");
-// const jwt = require("jsonwebtoken");
-// const db = require("../models");
-// const Tutorial = db.tutorials;
+const jwt = require("jsonwebtoken");
 // const Op = db.Sequelize.Op;
-
 const Usuario = require('../models').usuario;
+
 
 exports.registro = (req, res) => {
     // TODO: Comprobar email ya está en uso => throw new exception o return res.status(400).json().end()?
@@ -20,7 +18,7 @@ exports.registro = (req, res) => {
                     res.status(201).json({
                         message: "Usuario creado correctamente.",
                         result: resp
-                    })
+                    });
                 })
                 .catch(e => {
                     res.status(500).json({
@@ -29,7 +27,7 @@ exports.registro = (req, res) => {
                     });
                 });
         });
-}
+};
 
 exports.login = (req, res, next) => {
 
@@ -46,8 +44,8 @@ exports.login = (req, res, next) => {
 //       fetchedUser = user;
 //       return bcrypt.compare(req.body.password, user.password); // compare password is correct
 //     })
-//     .then(result => { // result will be true/false depending on previous compare
-//       if (!result) {
+//     .then(validPass => { // result will be true/false depending on previous compare
+//       if (!validPass) {
 //         return res.status(401).json({
 //           message: "Auth failed, incorrect credentials."
 //         });

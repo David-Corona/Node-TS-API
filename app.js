@@ -1,12 +1,12 @@
 const express = require('express'); 
 const app = express(); // ejecuta el paquete como una funcion y devuelve una app de express
-// const mysql = require('mysql2');
+// const mysql = require('mysql2'); // TODO: necesario teniendo sequelize?
 const Sequelize = require("sequelize");
-// const bodyParser = require("body-parser");
-const dbConfig = require("./config/config.json");
+// const dbConfig = require("./config/config.json");
 const cors = require("cors");
 
 const usuariosRoutes = require("./routes/usuarios.routes");
+const authRoutes = require("./routes/auth.routes");
 
 app.use(cors()); // TODO, esto permite todas las conexiones.
 // var corsOptions = {
@@ -14,13 +14,9 @@ app.use(cors()); // TODO, esto permite todas las conexiones.
 // };
 // app.use(cors(corsOptions));
 
-
-// app.use(bodyParser.json()); //mean 
-// parse requests of content-type - application/json
-// app.use(express.json());
+app.use(express.json()); // parse requests de tipo json
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
-
 
 // TODO: Mover datos a config > dbconfig + implementar ENVs
 const sequelize = new Sequelize(
@@ -39,17 +35,7 @@ sequelize.authenticate().then(() => {
     console.error('No se ha podido conectar a la base de datos: ', error);
 });
   
-
-// Middleware
-app.use((req, res, next) => {
-    console.log("In Middleware");
-    next();
-});
-
-// app.use((req, res, next) => {
-//     res.send("Hello testing")
-// });
-
 app.use("/api/usuarios", usuariosRoutes);
+app.use("/api/auth", authRoutes);
 
-module.exports = app; // exporta app + middlewares
+module.exports = app;
