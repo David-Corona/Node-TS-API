@@ -48,14 +48,14 @@ exports.login = (req, res) => {
                 });
             }
             const token = jwt.sign(
-                { email: fetchedUser.email, userId: fetchedUser._id },
-                "secret_or_private_key_provisional_a_modificar_y_agregar_a_env", // TODO: mover a env
+                { email: fetchedUser.email, userId: fetchedUser.id },
+                process.env.JWT_PRIVATE_KET,
                 { expiresIn: "1h" } // TODO: tiempo?
             );
-            return res.status(200).json({
+            res.status(200).json({
                 token: token,
                 expiresIn: 3600, // TODO: tiempo?
-                usuario_id: fetchedUser._id
+                usuario_id: fetchedUser.id
             })
         })
         .catch(e => {

@@ -1,14 +1,14 @@
 {
     "testing": {
         "username": "root",
-        "password": "Enero100190!",
+        "password": "123456",
         "database": "juego",
         "host": "localhost",
         "dialect": "mysql"
     },
     "development": {
         "username": "root",
-        "password": "Enero100190!",
+        "password": "123456",
         "database": "juego",
         "host": "localhost",
         "dialect": "mysql"

@@ -2,8 +2,9 @@ const express = require('express');
 const app = express(); // ejecuta el paquete como una funcion y devuelve una app de express
 // const mysql = require('mysql2'); // TODO: necesario teniendo sequelize?
 const Sequelize = require("sequelize");
-// const dbConfig = require("./config/config.json");
+// const dbConfig = require("./config/config.json"); // TODO
 const cors = require("cors");
+require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
 
 const usuariosRoutes = require("./routes/usuarios.routes");
 const authRoutes = require("./routes/auth.routes");
@@ -18,14 +19,14 @@ app.use(express.json()); // parse requests de tipo json
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
 
-// TODO: Mover datos a config > dbconfig / implementar ENVs
+// TODO: Implementar distintos ENVs
 const sequelize = new Sequelize(
-    'juego',
-    'root',
-    'Enero100190!',
+    process.env.DB_NAME,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
-        host: 'localhost',
-        dialect: 'mysql'
+        host: process.env.DB_HOST,
+        dialect: process.env.DB_DIALECT
     }
 );
 

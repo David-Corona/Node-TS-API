@@ -8,21 +8,21 @@ module.exports = {
       {
         nombre: 'Test',
         email: 'test@test.com',
-        password: '1234',
+        password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         nombre: 'David',
         email: 'test@hotmail.com',
-        password: '1234',
+        password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         nombre: 'Admin',
         email: 'corona_121@hotmail.com',
-        password: '1234',
+        password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
       }
