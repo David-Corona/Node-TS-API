@@ -20,6 +20,7 @@ sequelize db:seed:all
 Pendiente:
 - Crear distintos ENVs ? config.json?
 - Auth JWT => crear login
+- Validar email
 
 
 

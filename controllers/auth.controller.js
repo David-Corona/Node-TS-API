@@ -5,7 +5,11 @@ const Usuario = require('../models').usuario;
 
 
 exports.registro = (req, res) => {
-    // TODO: Comprobar email ya está en uso => throw new exception o return res.status(400).json().end()?
+    const usuario = Usuario.findOne({ email: req.body.email });
+    if (usuario) {
+      return res.status(400).json({message: "El email ya está en uso."});
+    }
+
     bcrypt.hash(req.body.password, 10)
         .then(hash => {
             const usuario = new Usuario({

@@ -1,5 +1,5 @@
 const express = require('express'); 
-const app = express(); // ejecuta el paquete como una funcion y devuelve una app de express
+const app = express(); // ejecuta el paquete y devuelve una app de express
 // const mysql = require('mysql2'); // TODO: necesario teniendo sequelize?
 const Sequelize = require("sequelize");
 // const dbConfig = require("./config/config.json"); // TODO
