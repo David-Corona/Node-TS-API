@@ -5,9 +5,9 @@ const Usuario = require('../models').usuario;
 
 
 exports.registro = (req, res) => {
-    const usuario = Usuario.findOne({ email: req.body.email });
+    const usuario = Usuario.findOne({ where: { email: req.body.email }})
     if (usuario) {
-      return res.status(400).json({message: "El email ya está en uso."});
+      return res.status(400).json({message: "El email ya está en uso."})
     }
 
     bcrypt.hash(req.body.password, 10)
@@ -17,6 +17,7 @@ exports.registro = (req, res) => {
                 email: req.body.email,
                 password: hash
             });
+            console.log(usuario);
             usuario.save()
                 .then(resp => {
                     res.status(201).json({
@@ -25,6 +26,7 @@ exports.registro = (req, res) => {
                     });
                 })
                 .catch(e => {
+                    console.log("Error al registrar: ", e);
                     res.status(500).json({
                         message: "Error al crear usuario",
                         error: e
@@ -35,7 +37,7 @@ exports.registro = (req, res) => {
 
 exports.login = (req, res) => {
     let fetchedUser;
-    Usuario.findOne({ email: req.body.email })
+    Usuario.findOne({ where: { email: req.body.email }})
         .then(user => {
             if (!user) {
                 return res.status(404).json({
@@ -63,6 +65,7 @@ exports.login = (req, res) => {
             })
         })
         .catch(e => {
+            console.log("Error al loguar: ", e);
             return res.status(404).json({
                 message: "Error al intentar loguear.",
                 error: e

@@ -26,9 +26,17 @@ const sequelize = new Sequelize(
     process.env.DB_PASSWORD,
     {
         host: process.env.DB_HOST,
-        dialect: process.env.DB_DIALECT
-    }
+        dialect: process.env.DB_DIALECT,
+    }   
 );
+
+// const connection = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     database: 'juego',
+//     password: 'xxxxxxxxxxx',
+//     port: 3306
+//   });
 
 sequelize.authenticate().then(() => {
     console.log('Conectado a la base de datos!');
