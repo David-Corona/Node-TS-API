@@ -1,12 +1,10 @@
 'use strict';
 const { Model } = require('sequelize');
 
-// Seq cli: sequelize model:create --name usuario --attributes nombre:string,email:string
-
 module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
     static associate(models) {
-      // define association here
+      Usuario.hasOne(models.UsuarioToken);
     }
   }
   Usuario.init({

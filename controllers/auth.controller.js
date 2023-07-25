@@ -53,15 +53,29 @@ exports.login = (req, res) => {
                     message: "Las credenciales son incorrectas."
                 });
             }
-            const token = jwt.sign(
+
+            // TODO: se podria exportar
+            const accessToken = jwt.sign(
                 { email: fetchedUser.email, userId: fetchedUser.id },
                 process.env.JWT_PRIVATE_KET,
-                { expiresIn: "1h" } // TODO: tiempo?
+                { expiresIn: "1m" } //TODO: cambiar, esto para testeo 
             );
-            res.status(200).json({
-                token: token,
-                expiresIn: 3600, // TODO: tiempo?
-                usuario_id: fetchedUser.id
+            const refreshToken = jwt.sign(
+                { email: fetchedUser.email, userId: fetchedUser.id },
+                process.env.JWT_PRIVATE_KET,
+                { expiresIn: "3m" } //TODO: cambiar, esto para testeo, 1m por ejemplo
+            );
+
+            // guardar refreshToken en cookie (+seguridad)
+            res.status(200)
+            .cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict' }) //secure=true
+            // .header('Authorization', accessToken)
+            // .send(user);
+            .json({
+                accessToken: accessToken,
+                usuario_id: fetchedUser.id,
+                access_token_expires_in: 60, // TODO: cambiar
+                refresh_token_expires_in: 180 // TODO: cambiar
             })
         })
         .catch(e => {

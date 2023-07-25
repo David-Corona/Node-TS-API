@@ -4,8 +4,10 @@ npm run dev
 => http://localhost:3000/api
 
 Comandos sequelize:
-// crear modelos
+// crear modelos + migracion
 sequelize model:create --name usuario --attributes nombre:string,email:string
+// crear migracion
+sequelize migration:generate --name create-usuario  
 // crear seed
 sequelize seed:generate --name seed-usuarios
 // ejecutar migraciones
@@ -20,7 +22,8 @@ Sequelize findAndCountAll() => Resultados paginados + numero total
 
 Pendiente:
 - Auth JWT => crear login
-
+- Refresh Tokens
+refresh token should be exchanged only with the authorization server to mitigate the risk of leakage, so it makes sense to send it only to the /refresh endpoint
 
 
 Notas:
