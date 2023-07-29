@@ -19,17 +19,23 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }, 
     usuario_id: {
-      type: DataTypes.STRING, //TODO type ObjectId ?
+      type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true
     },
-    // createdAt: { 
-    //     type: DataTypes.DATE, 
-    //     default: Date.now, 
-    //     expires: 30 * 86400 
-    // }
+    expiryDate: { 
+      type: DataTypes.DATE, 
+      // defaultValue: new Date() + 
+    },
+    createdAt: { 
+        type: DataTypes.DATE, 
+        defaultValue: new Date()
+    }
   }, {
     sequelize, 
     modelName: 'UsuarioToken', 
+    tableName: 'usuarios_token',
+    timestamps: false
   });
 
   return UsuarioToken;

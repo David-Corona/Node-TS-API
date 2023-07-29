@@ -16,13 +16,17 @@ module.exports = {
         allowNull: false
       },
       usuario_id: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true
       },
-      createdAt: {
+      expiryDate: { 
+        type: Sequelize.DATE, 
         allowNull: false,
-        type: Sequelize.DATE
+      },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false
       }
     });
   },

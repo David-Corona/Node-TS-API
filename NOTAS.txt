@@ -12,10 +12,10 @@ sequelize migration:generate --name create-usuario
 sequelize seed:generate --name seed-usuarios
 // ejecutar migraciones
 sequelize db:migrate 
-// deshace la ultima migraciones
-sequelize db:migrate:undo
+// deshace la ultima migraciones // todas
+sequelize db:migrate:undo //db:migrate:undo:all
 // ejectuar seeds
-sequelize db:seed:all 
+sequelize db:seed:all  //db:seed:undo:all
 
 Sequelize findAndCountAll() => Resultados paginados + numero total
 
@@ -24,6 +24,15 @@ Pendiente:
 - Auth JWT => crear login
 - Refresh Tokens
 refresh token should be exchanged only with the authorization server to mitigate the risk of leakage, so it makes sense to send it only to the /refresh endpoint
+
+TODO
+Por que usuario_id en los 2 modelos en la relación?
+Guardar refresh token en BBDD
+
+https://www.bezkoder.com/jwt-refresh-token-node-js/
+
+https://dev.to/cyberwolves/jwt-authentication-with-access-tokens-refresh-tokens-in-node-js-5aa9
+https://medium.com/@techsuneel99/jwt-authentication-in-nodejs-refresh-jwt-with-cookie-based-token-37348ff685bf
 
 
 Notas:

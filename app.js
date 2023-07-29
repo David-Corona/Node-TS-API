@@ -5,17 +5,20 @@ const Sequelize = require("sequelize");
 // const dbConfig = require("./config/config.json"); // TODO
 const cors = require("cors");
 require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
+var cookieParser = require('cookie-parser')
 
 const usuariosRoutes = require("./routes/usuarios.routes");
 const authRoutes = require("./routes/auth.routes");
 
-app.use(cors()); // TODO, esto permite todas las conexiones.
-// var corsOptions = {
-//     origin: "https://localhost:3000"
-// };
-// app.use(cors(corsOptions));
+// app.use(cors()); // TODO, esto permite todas las conexiones.
+var corsOptions = {
+    origin: "http://localhost:4200",
+    credentials: true,
+};
+app.use(cors(corsOptions));
 
 app.use(express.json()); // parse requests de tipo json
+app.use(cookieParser()); // parse cookies, añade req.cookies
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
 
