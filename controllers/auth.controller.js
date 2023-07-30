@@ -96,6 +96,7 @@ exports.login = (req, res) => {
 };
 
 // TODO: Se está destruyendo/eliminando de la BD en caso de error? y cuando expira?
+// Nota: Se usa error 403, para que interceptor de Front no vuelva a llamar a refreshToken
 exports.refreshToken = async (req, res) => {
 
     const refreshToken = req.cookies['refreshToken'];
@@ -108,9 +109,7 @@ exports.refreshToken = async (req, res) => {
 
     try {
         let refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
-        console.log("RefresTokenDB: ", refreshTokenDB);
         if(!refreshTokenDB){
-            console.log("refreshTokenDB: ", refreshTokenDB);
             return res.status(403).json({ 
                 message: "El token de refresco no se encuentra en la Base de Datos." 
             });
@@ -152,7 +151,7 @@ exports.refreshToken = async (req, res) => {
             });
         }     
 
-        const usuario = await RefreshToken.getUsuario(); // getUsuario() Sequelize?
+        const usuario = await RefreshToken.getUsuario(); 
         console.log("Usuario: " + usuario);
         const newAccessToken = jwt.sign(
             { email: usuario.email, userId: usuario.id },
@@ -176,6 +175,18 @@ exports.refreshToken = async (req, res) => {
     }
 };
 
-exports.logout = (req, res) => {
-
+exports.logout = async (req, res) => {
+    try {
+        const refreshToken = req.cookies['refreshToken'];
+        const refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
+        RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
+        return res.status(200).json({
+            message: "Deslogueado correctamente.",
+        });
+    } catch(e) {
+        console.log("Error en Logout: ", e);
+        return res.status(404).json({
+            message: "Error en Logout: ", e,
+        });
+    }
 };

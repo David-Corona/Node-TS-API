@@ -27,7 +27,7 @@ refresh token should be exchanged only with the authorization server to mitigate
 
 TODO
 Por que usuario_id en los 2 modelos en la relación?
-Guardar refresh token en BBDD
+Manejar solo 1 token por usuario
 
 https://www.bezkoder.com/jwt-refresh-token-node-js/
 
