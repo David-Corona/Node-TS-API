@@ -70,9 +70,32 @@ exports.login = (req, res) => {
             let expiresAt = new Date();
             expiresAt.setSeconds(expiresAt.getSeconds() + 30); //TODO
             console.log("expiresAt", expiresAt);
-            RefreshToken.create({token: refreshToken, usuario_id: fetchedUser.id, expiryDate: expiresAt})
-                .then(resp => console.log(resp))
-                .catch(e => console.log(e))
+
+            // TODO: Si ya existe, sobrescribir
+            // RefreshToken.create({token: refreshToken, usuario_id: fetchedUser.id, expiryDate: expiresAt})
+            //     .then(resp => console.log(resp))
+            //     .catch(e => console.log(e))
+
+            const values = {
+                token: refreshToken,
+                expiryDate: expiresAt,
+                usuario_id: fetchedUser.id
+            };
+                
+            const options = {
+                where: { usuario_id: fetchedUser.id }, // Condition to find the record
+                returning: true,                      // To return the updated record
+            };
+                
+            RefreshToken.upsert(values, options)
+                .then(([record, created]) => {
+                    if (!created) {
+                    console.log("Record already existed and was updated:", record.get());
+                    } else {
+                    console.log("Record created:", record.get());
+                    }
+                })
+                .catch(e => console.log(e));
 
             // guardar refreshToken en cookie (+seguridad)
             res.status(200)
@@ -82,8 +105,8 @@ exports.login = (req, res) => {
             .json({
                 accessToken: accessToken,
                 usuario_id: fetchedUser.id,
-                access_token_expires_in: 60, // TODO: cambiar
-                refresh_token_expires_in: 180 // TODO: cambiar
+                // access_token_expires_in: 60, // TODO: cambiar
+                // refresh_token_expires_in: 180 // TODO: cambiar
             })
         })
         .catch(e => {
@@ -100,7 +123,7 @@ exports.login = (req, res) => {
 exports.refreshToken = async (req, res) => {
 
     const refreshToken = req.cookies['refreshToken'];
-    console.log("RefresToken: ", refreshToken);
+    console.log("RefreshToken - ", refreshToken);
     if (!refreshToken) {
         return res.status(403).json({
             message: "No se ha adjuntado token de refresco."
@@ -109,6 +132,7 @@ exports.refreshToken = async (req, res) => {
 
     try {
         let refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
+        console.log("refreshTokenDB - ", refreshTokenDB);
         if(!refreshTokenDB){
             return res.status(403).json({ 
                 message: "El token de refresco no se encuentra en la Base de Datos." 
@@ -145,13 +169,15 @@ exports.refreshToken = async (req, res) => {
 
         // TODO refreshToken.expiryDate.getTime()
         if(refreshTokenDB.expiryDate.getTime() < new Date().getTime()){
+            console.log("RefreshToken expirado");
             RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
             return res.status(403).json({
                 message: "El token de refresco ha expirado.",
             });
         }     
 
-        const usuario = await RefreshToken.getUsuario(); 
+        const usuario = await refreshTokenDB.getUsuario(); 
+        // const usuario = Usuario.findOne({ where: { id: refreshTokenDB.id } })
         console.log("Usuario: " + usuario);
         const newAccessToken = jwt.sign(
             { email: usuario.email, userId: usuario.id },
@@ -162,8 +188,8 @@ exports.refreshToken = async (req, res) => {
         return res.status(200).json({
             accessToken: newAccessToken,
             // refreshToken: refreshToken.token,
-            // usuario_id: usuario.id,
-            access_token_expires_in: 60 
+            usuario_id: usuario.id,
+            // access_token_expires_in: 60 
         });
 
     } catch(e) {
@@ -177,9 +203,13 @@ exports.refreshToken = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        const refreshToken = req.cookies['refreshToken'];
-        const refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
-        RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
+        // const refreshToken = req.cookies['refreshToken'];
+        // const refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
+        // if (refreshTokenDB) {
+        //     RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
+        // }
+        // Ahora no recibimos el cookie, asi que pasamos el usuario_id desde el front
+        RefreshToken.destroy({ where: { usuario_id: req.body.usuario_id } });
         return res.status(200).json({
             message: "Deslogueado correctamente.",
         });

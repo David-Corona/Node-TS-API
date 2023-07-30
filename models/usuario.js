@@ -4,7 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
     static associate(models) {
-      Usuario.hasOne(models.UsuarioToken, { foreignKey: "usuario_id" });
+      Usuario.hasOne(models.UsuarioToken, { foreignKey: "usuario_id" }); // One-To-One
     }
   }
   Usuario.init({
@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }
   }, {
-    sequelize, // We need to pass the connection instance
+    sequelize,
     modelName: 'Usuario', 
   });
 

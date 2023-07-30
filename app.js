@@ -17,8 +17,8 @@ var corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.use(express.json()); // parse requests de tipo json
-app.use(cookieParser()); // parse cookies, añade req.cookies
+app.use(express.json()); // parse requests de tipo json (añade req.body)
+app.use(cookieParser()); // parse cookies (añade req.cookies)
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
 
