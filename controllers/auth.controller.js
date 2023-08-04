@@ -18,7 +18,7 @@ exports.registro = (req, res) => {
                 email: req.body.email,
                 password: hash
             });
-            console.log(usuario);
+
             usuario.save()
                 .then(resp => {
                     res.status(201).json({
@@ -36,94 +36,84 @@ exports.registro = (req, res) => {
         });
 };
 
-exports.login = (req, res) => {
-    let fetchedUser;
-    Usuario.findOne({ where: { email: req.body.email }})
-        .then(user => {
-            if (!user) {
-                return res.status(404).json({
-                    message: "Usuario no encontrado."
-                });
-            }
-            fetchedUser = user;
-            return bcrypt.compare(req.body.password, user.password);
-        })
-        .then(validPass => { // boolean
-            if (!validPass) {
-                return res.status(401).json({
-                    message: "Las credenciales son incorrectas."
-                });
-            }
+exports.login = async (req, res) => {  
+    try {
+        const user = await Usuario.findOne({ where: { email: req.body.email }})
+        if (!user) {
+            return res.status(404).json({
+                message: "Usuario no encontrado."
+            });
+        }
 
-            // TODO: se podria exportar
-            const accessToken = jwt.sign(
-                { email: fetchedUser.email, userId: fetchedUser.id },
-                process.env.JWT_PRIVATE_KEY,
-                { expiresIn: process.env.JWT_ACCESS_TOKEN_EXP } //TODO: cambiar, esto para testeo 
-            );
-            const refreshToken = jwt.sign(
-                { email: fetchedUser.email, userId: fetchedUser.id },
-                process.env.JWT_PRIVATE_KEY,
-                { expiresIn: process.env.JWT_REFRESH_TOKEN_EXP } //TODO: cambiar, esto para testeo, 1m por ejemplo
-            );
+        const validPass = await bcrypt.compare(req.body.password, user.password);
+        if (!validPass) {
+            return res.status(401).json({
+                message: "Las credenciales son incorrectas."
+            });
+        }
 
-            let expiresAt = new Date();
-            expiresAt.setSeconds(expiresAt.getSeconds() + 30); //TODO
-            console.log("expiresAt", expiresAt);
+        const accessToken = jwt.sign(
+            { email: user.email, userId: user.id },
+            process.env.JWT_PRIVATE_KEY,
+            { expiresIn: Number(process.env.JWT_ACCESS_TOKEN_EXP) } 
+        );
+        const refreshToken = jwt.sign(
+            { email: user.email, userId: user.id },
+            process.env.JWT_PRIVATE_KEY,
+            { expiresIn: Number(process.env.JWT_REFRESH_TOKEN_EXP) } 
+        );
 
-            // TODO: Si ya existe, sobrescribir
-            // RefreshToken.create({token: refreshToken, usuario_id: fetchedUser.id, expiryDate: expiresAt})
-            //     .then(resp => console.log(resp))
-            //     .catch(e => console.log(e))
+        // Date.now() + milisegundos
+        const refreshTokenExpiryDate = new Date(Date.now() + (Number(process.env.JWT_REFRESH_TOKEN_EXP) * 1000));
+        // let expiryDate = new Date();
+        // expiryDate.setSeconds(expiryDate.getSeconds() + expiresIn); 
 
-            const values = {
-                token: refreshToken,
-                expiryDate: expiresAt,
-                usuario_id: fetchedUser.id
-            };
-                
-            const options = {
-                where: { usuario_id: fetchedUser.id }, // Condition to find the record
-                returning: true,                      // To return the updated record
-            };
-                
-            RefreshToken.upsert(values, options)
-                .then(([record, created]) => {
-                    if (!created) {
-                    console.log("Record already existed and was updated:", record.get());
-                    } else {
-                    console.log("Record created:", record.get());
-                    }
-                })
-                .catch(e => console.log(e));
+        // Insertar o actualizar (si existe) refresToken en BBDD.
+        const values = {
+            token: refreshToken,
+            expiryDate: refreshTokenExpiryDate,
+            usuario_id: user.id
+        };
+        const options = {
+            where: { usuario_id: user.id },
+            //returning: true,
+        };
+        RefreshToken.upsert(values, options)
+            .catch(e => console.log(e));
 
-            // guardar refreshToken en cookie (+seguridad)
-            res.status(200)
-            .cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict' }) //secure=true
+        // res.cookie: http://expressjs.com/es/api.html#res.cookie
+        res.status(200)
+            .cookie(
+                'refreshToken', 
+                refreshToken, 
+                { 
+                    httpOnly: true,
+                    sameSite: 'strict', //sameSite: 'None'
+                    // expires: Date - Fecha expiración en GMT (Si no se incluye, caduca con la sesión).
+                    expires: refreshTokenExpiryDate,
+                    // maxAge: 30 * 1000 // Tiempo expiración en milisegundos
+                    // secure=true // secure=true => Cookie sólo para HTTPS
+                }
+            ) 
             // .header('Authorization', accessToken)
-            // .send(user);
             .json({
                 accessToken: accessToken,
-                usuario_id: fetchedUser.id,
-                // access_token_expires_in: 60, // TODO: cambiar
-                // refresh_token_expires_in: 180 // TODO: cambiar
+                usuario_id: user.id,
+                // access_token_expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP) 
             })
-        })
-        .catch(e => {
-            console.log("Error al loguear: ", e);
-            return res.status(404).json({
-                message: "Error al intentar loguear.",
-                error: e
-            });
+    } catch (e) {
+        console.log("Error al loguear: ", e);
+        return res.status(404).json({
+            message: "Error al intentar loguear.",
+            error: e
         });
+    };
 };
 
-// TODO: Se está destruyendo/eliminando de la BD en caso de error? y cuando expira?
-// Nota: Se usa error 403, para que interceptor de Front no vuelva a llamar a refreshToken
+// Se usa error 403, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
 exports.refreshToken = async (req, res) => {
 
     const refreshToken = req.cookies['refreshToken'];
-    console.log("RefreshToken - ", refreshToken);
     if (!refreshToken) {
         return res.status(403).json({
             message: "No se ha adjuntado token de refresco."
@@ -132,64 +122,32 @@ exports.refreshToken = async (req, res) => {
 
     try {
         let refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
-        console.log("refreshTokenDB - ", refreshTokenDB);
         if(!refreshTokenDB){
             return res.status(403).json({ 
                 message: "El token de refresco no se encuentra en la Base de Datos." 
             });
         }
 
-        // TODO: mover al modelo
-        // verifyExpiration = (token) => {
-        //     return token.expiryDate.getTime() < new Date().getTime();
-        //   };
-
-        //   if (verifyExpiration(refreshToken)) {
-        //     RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
-            
-        //     res.status(403).json({
-        //       message: "Refresh token was expired. Please make a new signin request",
-        //     });
-        //     return;
-        //   }
-
-        // const decodedToken = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY)
-        //     .catch(e => {
-        //         RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
-        //         return res.status(401).json({
-        //             message: "El token de refresco ha expirado.",
-        //         });
-        //     })
-        // console.log("DecodedToken", decodedToken);
-        // if(!decodedToken) {
-        //     return res.status(403).json({ 
-        //         message: "Token de refresco no válido." 
-        //     });
-        // }
-
-        // TODO refreshToken.expiryDate.getTime()
-        if(refreshTokenDB.expiryDate.getTime() < new Date().getTime()){
-            console.log("RefreshToken expirado");
+        // Comprobar expiración según expiryDate en BBDD
+        if(refreshTokenDB.expiryDate.getTime() < new Date().getTime()) {
             RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
             return res.status(403).json({
                 message: "El token de refresco ha expirado.",
             });
         }     
 
-        const usuario = await refreshTokenDB.getUsuario(); 
+        const usuario = await refreshTokenDB.getUsuario(); // getUsuario() función de sequelize (por la relación)
         // const usuario = Usuario.findOne({ where: { id: refreshTokenDB.id } })
-        console.log("Usuario: " + usuario);
         const newAccessToken = jwt.sign(
             { email: usuario.email, userId: usuario.id },
             process.env.JWT_PRIVATE_KEY,
-            { expiresIn: process.env.JWT_ACCESS_TOKEN_EXP } //TODO: cambiar, esto para testeo 
+            { expiresIn: Number(process.env.JWT_ACCESS_TOKEN_EXP) }
         );
 
         return res.status(200).json({
             accessToken: newAccessToken,
-            // refreshToken: refreshToken.token,
             usuario_id: usuario.id,
-            // access_token_expires_in: 60 
+            // access_token_expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP)
         });
 
     } catch(e) {
@@ -203,16 +161,21 @@ exports.refreshToken = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
-        // const refreshToken = req.cookies['refreshToken'];
-        // const refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
+        // Si recibimos el cookie, se puede hacer de este modo (si no se envia solo a refreshToken)
+        // const refreshTokenDB = await RefreshToken.findOne({ where: { token: req.cookies['refreshToken'] } });
         // if (refreshTokenDB) {
         //     RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
         // }
-        // Ahora no recibimos el cookie, asi que pasamos el usuario_id desde el front
-        RefreshToken.destroy({ where: { usuario_id: req.body.usuario_id } });
+
+        if(req.body.usuario_id) { 
+            RefreshToken.destroy({ where: { usuario_id: req.body.usuario_id } });
+        }
+
+        // OK aunque no se borre => Al hacer nuevo login, se sobrescribe.
         return res.status(200).json({
             message: "Deslogueado correctamente.",
         });
+
     } catch(e) {
         console.log("Error en Logout: ", e);
         return res.status(404).json({

@@ -1,45 +1,47 @@
 
-// nodemon server
-npm run dev
+Usando server nodemon: npm run dev
 => http://localhost:3000/api
 
-Comandos sequelize:
-// crear modelos + migracion
-sequelize model:create --name usuario --attributes nombre:string,email:string
-// crear migracion
-sequelize migration:generate --name create-usuario  
-// crear seed
-sequelize seed:generate --name seed-usuarios
-// ejecutar migraciones
-sequelize db:migrate 
-// deshace la ultima migraciones // todas
-sequelize db:migrate:undo //db:migrate:undo:all
-// ejectuar seeds
-sequelize db:seed:all  //db:seed:undo:all
+
+# CMDS SEQUELIZE:
+- Crear modelos + migracion
+  sequelize model:create --name usuario --attributes nombre:string,email:string
+- Crear migracion
+  sequelize migration:generate --name create-usuario  
+- Crear seed
+  sequelize seed:generate --name seed-usuarios
+- Ejecutar migraciones
+  sequelize db:migrate 
+- Deshacer la ultima migraciones // todas
+  sequelize db:migrate:undo // db:migrate:undo:all
+- Ejectuar seeds
+  sequelize db:seed:all  // db:seed:undo:all
 
 Sequelize findAndCountAll() => Resultados paginados + numero total
 
 
 
-
-TODO
-Encriptar refreshtoken
-
-
-https://www.bezkoder.com/jwt-refresh-token-node-js/
-
-https://dev.to/cyberwolves/jwt-authentication-with-access-tokens-refresh-tokens-in-node-js-5aa9
-https://medium.com/@techsuneel99/jwt-authentication-in-nodejs-refresh-jwt-with-cookie-based-token-37348ff685bf
+# TODO
+- Encriptar refreshtoken.
+- Auth: Añadir explicación completa en Readme.
 
 
-Notas:
+
+# NOTAS:
 - Envs: guardando variables/credenciales en .env (package dotenv)
   models > index.js carga los datos del entorno segun config.js que obtiene las variables de .env
 
-- refresh token should be exchanged only with the authorization server to mitigate the risk of leakage, so it makes sense to send it only to the /refresh endpoint
-Ok, upsert para que solo hay un token x usuario (crear o actualizar)
-Encriptar refreshtoken
+- Auth (Use de accessToken + refreshToken)
+
+- Dates
+  - Dates en Base de datos guardados en UTC. Manejar en back o incluso en front.
+      Para cambiar timezone en BBDD: C:\ProgramData\MySQL\MySQL Server 8.0\my.ini
+      Bloc notas como admin y añadir: default_time_zone = +1:00
+  - date-fns + date-fns-tz instalados y no utlizados por ahora.
+  - String => console.log("New Date - ", new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" }));
 
 
-Enlaces útiles:
+
+# ENLACES ÚTILES:
 https://sequelize.org/docs/v6/core-concepts/model-basics/
+https://www.bezkoder.com/jwt-refresh-token-node-js/

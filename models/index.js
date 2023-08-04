@@ -16,7 +16,7 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-// Carga todos los modelos
+// Importa todos los modelos => => db.Usuario = require("./Usuario.js")(sequelize, Sequelize);
 fs
   .readdirSync(__dirname)
   .filter(file => {
@@ -32,9 +32,7 @@ fs
     db[model.name] = model;
   });
 
-// db.Usuario = require("./Usuario.js")(sequelize, Sequelize);
-// db.UsuarioToken = require("./UsuarioToken.js")(sequelize, Sequelize);
-
+// Añade todas las relaciones
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
@@ -43,6 +41,5 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
 
 module.exports = db;

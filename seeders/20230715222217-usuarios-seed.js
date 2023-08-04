@@ -29,13 +29,13 @@ module.exports = {
     ];
 
     for (const usuario of arrayUsuarios) {
-      usuario.password = await bcrypt.hash(usuario.password, 10);
+      usuario.password =  await bcrypt.hash(usuario.password, 10);
     }
 
-    await queryInterface.bulkInsert('usuarios', arrayUsuarios, {});
+    queryInterface.bulkInsert('usuarios', arrayUsuarios, {});
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('usuarios', null, {});
+    queryInterface.bulkDelete('usuarios', null, {});
   }
 };

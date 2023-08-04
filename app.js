@@ -1,16 +1,17 @@
 const express = require('express'); 
-const app = express(); // ejecuta el paquete y devuelve una app de express
-// const mysql = require('mysql2'); // TODO: necesario teniendo sequelize?
 const Sequelize = require("sequelize");
 // const dbConfig = require("./config/config.json"); // TODO
 const cors = require("cors");
 require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
-var cookieParser = require('cookie-parser')
+var cookieParser = require('cookie-parser');
 
 const usuariosRoutes = require("./routes/usuarios.routes");
 const authRoutes = require("./routes/auth.routes");
 
-// app.use(cors()); // TODO, esto permite todas las conexiones.
+const app = express();
+
+// TODO - configurar CORS
+// app.use(cors()); // esto permite todas las conexiones.
 var corsOptions = {
     origin: "http://localhost:4200",
     credentials: true,
@@ -22,7 +23,6 @@ app.use(cookieParser()); // parse cookies (añade req.cookies)
 // parse requests of content-type - application/x-www-form-urlencoded
 // app.use(express.urlencoded({ extended: true }));
 
-// TODO: Implementar distintos ENVs
 const sequelize = new Sequelize(
     process.env.DB_NAME,
     process.env.DB_USER,
@@ -32,14 +32,6 @@ const sequelize = new Sequelize(
         dialect: process.env.DB_DIALECT,
     }   
 );
-
-// const connection = mysql.createConnection({
-//     host: 'localhost',
-//     user: 'root',
-//     database: 'juego',
-//     password: 'xxxxxxxxxxx',
-//     port: 3306
-//   });
 
 sequelize.authenticate().then(() => {
     console.log('Conectado a la base de datos!');
