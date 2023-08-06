@@ -33,12 +33,12 @@ const sequelize = new Sequelize(
     }   
 );
 
-sequelize.authenticate().then(() => {
+sequelize.authenticate().then(async () => {
     console.log('Conectado a la base de datos!');
 }).catch((error) => {
     console.error('No se ha podido conectar a la base de datos: ', error);
 });
-  
+
 app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/auth", authRoutes);
 

@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
     static associate(models) {
       Usuario.hasOne(models.UsuarioToken, { foreignKey: "usuario_id" }); // One-To-One
+      Usuario.hasOne(models.UsuarioResetPassword, { foreignKey: "usuario_id" }); // One-To-One
     }
   }
   Usuario.init({

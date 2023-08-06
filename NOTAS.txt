@@ -1,6 +1,33 @@
+# TODO
+- Encriptar refreshtoken.
+- Auth: Añadir explicación completa en Readme.
+- Comprobar TODOs
+- Mirar error handling global
+  express-async-errors: "To catch all async errors"
+- Reestructurar, meter en src. Redefinir paths de Sequelize
 
-Usando server nodemon: npm run dev
-=> http://localhost:3000/api
+- Reseteo contraseña
+https://dev.to/cyberwolves/how-to-implement-password-reset-via-email-in-node-js-132m
+https://blog.logrocket.com/implementing-secure-password-reset-node-js/#folder-structure-files
+https://codevoweb.com/crud-api-node-prisma-postgresql-reset-password/
+=> Template: handlebars 
+
+
+# NOTAS:
+- Envs: guardando variables/credenciales en .env (package dotenv)
+  models > index.js carga los datos del entorno segun config.js que obtiene las variables de .env
+
+- Auth (Use de accessToken + refreshToken)
+
+- Dates
+  - Dates en Base de datos guardados en UTC. Manejar en back o incluso en front.
+      Para cambiar timezone en BBDD: C:\ProgramData\MySQL\MySQL Server 8.0\my.ini
+      Bloc notas como admin y añadir: default_time_zone = +1:00
+  - date-fns + date-fns-tz instalados y no utlizados por ahora.
+  - String => console.log("New Date - ", new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" }));
+
+- Usando server nodemon: npm run dev => http://localhost:3000/api
+
 
 
 # CMDS SEQUELIZE:
@@ -19,27 +46,7 @@ Usando server nodemon: npm run dev
 
 Sequelize findAndCountAll() => Resultados paginados + numero total
 
-
-
-# TODO
-- Encriptar refreshtoken.
-- Auth: Añadir explicación completa en Readme.
-
-
-
-# NOTAS:
-- Envs: guardando variables/credenciales en .env (package dotenv)
-  models > index.js carga los datos del entorno segun config.js que obtiene las variables de .env
-
-- Auth (Use de accessToken + refreshToken)
-
-- Dates
-  - Dates en Base de datos guardados en UTC. Manejar en back o incluso en front.
-      Para cambiar timezone en BBDD: C:\ProgramData\MySQL\MySQL Server 8.0\my.ini
-      Bloc notas como admin y añadir: default_time_zone = +1:00
-  - date-fns + date-fns-tz instalados y no utlizados por ahora.
-  - String => console.log("New Date - ", new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" }));
-
+Sequelize genera funciones en las relaciones: token.getUsuario() => devuelve el usuario relacionado con el token
 
 
 # ENLACES ÚTILES:

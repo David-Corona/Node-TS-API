@@ -1,8 +1,12 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const Usuario = require('../models').Usuario;
 const RefreshToken = require('../models').UsuarioToken;
+const ResetToken = require('../models').UsuarioResetPassword;
+
+const sendEmail = require('../app/utils/Emails/sendEmail');
 
 
 exports.registro = (req, res) => {
@@ -183,3 +187,51 @@ exports.logout = async (req, res) => {
         });
     }
 };
+
+// TODO - manejar mejor errores
+exports.forgotPassword = async (req, res) => { 
+
+    const user = await Usuario.findOne({ where: { email: req.body.email }})
+    if (!user) {
+        return res.status(404).json({
+            message: "Usuario no encontrado."
+        });
+    }
+
+    // TODO - Tambien se puede hacer crear o actualizar, para ahorrar un query
+    // Si ya existe un token para el usuario, eliminarlo.
+    let existingToken = await ResetToken.findOne({ where: { usuario_id: user.id } });
+    if(existingToken){
+        await existingToken.destroy();
+    }
+
+    // Generar token y hashear
+    let resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = await bcrypt.hash(resetToken); // Number(bcryptSalt)
+    
+    // Guardar token en BBDD
+    const usuarioResetPassword = new UsuarioResetPassword({
+        usuario_id: user.id,
+        token: hashedToken
+    })
+    usuarioResetPassword.save()
+        .catch(e => {
+            console.log("Error al crear token de reseteo de contraseña: ", e);
+            return res.status(500).json({
+                message: "Error al guardar token",
+                error: e
+            });
+        });
+
+    await sendEmail(
+        user.email,
+        "Reset Contraseña",
+        { nombre: user.nombre, link: `${process.env.BASE_URL}/auth/password-reset/${resetToken}` },
+        "./Templates/resetPassword.handlebars",
+    );
+}
+
+exports.resetPassword = async (req, res) => { 
+
+
+}
