@@ -1,12 +1,15 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { Op } = require("sequelize");
 
 const Usuario = require('../models').Usuario;
 const RefreshToken = require('../models').UsuarioToken;
 const ResetToken = require('../models').UsuarioResetPassword;
 
 const sendEmail = require('../app/utils/Emails/sendEmail');
+
+const bcryptSalt = process.env.BCRYPT_SALT;
 
 
 exports.registro = (req, res) => {
@@ -15,7 +18,7 @@ exports.registro = (req, res) => {
       return res.status(400).json({message: "El email ya está en uso."})
     }
 
-    bcrypt.hash(req.body.password, 10)
+    bcrypt.hash(req.body.password, Number(bcryptSalt))
         .then(hash => {
             const usuario = new Usuario({
                 nombre: req.body.nombre,
@@ -205,16 +208,18 @@ exports.forgotPassword = async (req, res) => {
         await existingToken.destroy();
     }
 
-    // Generar token y hashear
-    let resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = await bcrypt.hash(resetToken); // Number(bcryptSalt)
-    
-    // Guardar token en BBDD
-    const usuarioResetPassword = new UsuarioResetPassword({
+    // Generar string/token y hashear
+    let token = crypto.randomBytes(32).toString("hex");
+    const hashedToken = await bcrypt.hash(token, Number(bcryptSalt));
+    const tokenExpiryDate = new Date(Date.now() + (Number(process.env.RESET_PASS_TOKEN_EXP) * 1000));
+
+    // Guardar token hasheado en BBDD
+    const resetToken = new ResetToken({
         usuario_id: user.id,
-        token: hashedToken
+        token: hashedToken,
+        expiryDate: tokenExpiryDate
     })
-    usuarioResetPassword.save()
+    resetToken.save()
         .catch(e => {
             console.log("Error al crear token de reseteo de contraseña: ", e);
             return res.status(500).json({
@@ -223,15 +228,61 @@ exports.forgotPassword = async (req, res) => {
             });
         });
 
+    // enviar Email (destinatario, asunto, variables a introducir en template, template)
     await sendEmail(
         user.email,
         "Reset Contraseña",
-        { nombre: user.nombre, link: `${process.env.BASE_URL}/auth/password-reset/${resetToken}` },
-        "./Templates/resetPassword.handlebars",
-    );
+        { nombre: user.nombre, link: `${process.env.BASE_URL}/auth/reset-password/${user.id}/${token}` },
+        "./Templates/resetPassword.handlebars"
+    )
+    .then(() => {
+        return res.status(200).json({
+            message: "Email enviado correctamente.",
+        });
+    })
+    .catch(e => {
+        return res.status(500).json({
+            message: "Error al enviar email.",
+            error: e
+        });
+    })
 }
 
 exports.resetPassword = async (req, res) => { 
 
+    let resetToken = await ResetToken.findOne({ where: { usuario_id: req.body.usuario_id, expiryDate: { [Op.gt]: new Date(Date.now()) } } });
+    if(!resetToken ){
+        return res.status(404).json({
+            message: "Token inválido o caducado."
+        });
+    }  
+
+    const isValidToken = await bcrypt.compare(req.body.token, resetToken.token);
+    if (!isValidToken) {
+        return res.status(404).json({
+            message: "Token inválido."
+        });
+    }
+
+    const hashedPass = await bcrypt.hash(req.body.password, Number(bcryptSalt));
+
+    await Usuario.update({ password: hashedPass }, {
+        where: {
+          id: resetToken.usuario_id
+        }
+    })
+    .then(async () => {
+        // TODO - Enviar email de confirmación
+        await resetToken.destroy();
+        return res.status(200).json({
+            message: "Contraseña actualizada correctamente.",
+        });
+    })
+    .catch(e => {
+        console.log("Error al actualizar la contraseña: ", e);
+        return res.status(500).json({
+            message: "Error al actualizar la contraseña."
+        });
+    })
 
 }
