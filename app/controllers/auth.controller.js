@@ -6,9 +6,8 @@ const { Op } = require("sequelize");
 const Usuario = require('../models').Usuario;
 const RefreshToken = require('../models').UsuarioToken;
 const ResetToken = require('../models').UsuarioResetPassword;
-const sendEmail = require('../app/utils/Emails/sendEmail');
+const sendEmail = require('../utils/Emails/sendEmail');
 
-const bcryptSalt = process.env.BCRYPT_SALT;
 const INVALID_REF_TOKEN = "invalid-refreshtoken";
 const crypto_algorithm = "aes-128-cbc";
 
@@ -20,7 +19,7 @@ exports.registro = async (req, res) => {
       return res.status(400).json({message: "El email ya está en uso."})
     }
 
-    bcrypt.hash(req.body.password, Number(bcryptSalt))
+    bcrypt.hash(req.body.password, Number(process.env.BCRYPT_SALT))
         .then(hash => {
             const usuario = new Usuario({
                 nombre: req.body.nombre,
@@ -121,6 +120,7 @@ exports.login = async (req, res) => {
     };
 };
 
+// TODO - juntar ifs/errores
 // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
 exports.refreshToken = async (req, res) => {
 
@@ -235,7 +235,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Generar string/token y hashear
     let token = crypto.randomBytes(32).toString("hex");
-    const hashedToken = await bcrypt.hash(token, Number(bcryptSalt));
+    const hashedToken = await bcrypt.hash(token, Number(process.env.BCRYPT_SALT));
     const tokenExpiryDate = new Date(Date.now() + (Number(process.env.RESET_PASS_TOKEN_EXP) * 1000));
 
     // Guardar token hasheado en BBDD
@@ -289,7 +289,7 @@ exports.resetPassword = async (req, res) => {
         });
     }
 
-    const hashedPass = await bcrypt.hash(req.body.password, Number(bcryptSalt));
+    const hashedPass = await bcrypt.hash(req.body.password, Number(process.env.BCRYPT_SALT));
 
     await Usuario.update({ password: hashedPass }, {
         where: {

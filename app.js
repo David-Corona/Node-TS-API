@@ -5,8 +5,8 @@ const cors = require("cors");
 require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
 var cookieParser = require('cookie-parser');
 
-const usuariosRoutes = require("./routes/usuarios.routes");
-const authRoutes = require("./routes/auth.routes");
+const usuariosRoutes = require("./app/routes/usuarios.routes");
+const authRoutes = require("./app/routes/auth.routes");
 
 const app = express();
 
