@@ -15,9 +15,13 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     token: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false
     }, 
+    init_vector: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
     usuario_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

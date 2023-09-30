@@ -12,7 +12,11 @@ module.exports = {
         allowNull: false
       },
       token: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
+        allowNull: false
+      },
+      init_vector: {
+        type: Sequelize.STRING(100),
         allowNull: false
       },
       usuario_id: {

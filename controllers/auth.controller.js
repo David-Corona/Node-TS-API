@@ -6,15 +6,17 @@ const { Op } = require("sequelize");
 const Usuario = require('../models').Usuario;
 const RefreshToken = require('../models').UsuarioToken;
 const ResetToken = require('../models').UsuarioResetPassword;
-
 const sendEmail = require('../app/utils/Emails/sendEmail');
 
 const bcryptSalt = process.env.BCRYPT_SALT;
+const INVALID_REF_TOKEN = "invalid-refreshtoken";
+const crypto_algorithm = "aes-128-cbc";
 
 
-exports.registro = (req, res) => {
-    const usuario = Usuario.findOne({ where: { email: req.body.email }})
+exports.registro = async (req, res) => {
+    const usuario = await Usuario.findOne({ where: { email: req.body.email }})
     if (usuario) {
+        console.log(usuario);
       return res.status(400).json({message: "El email ya está en uso."})
     }
 
@@ -30,7 +32,7 @@ exports.registro = (req, res) => {
                 .then(resp => {
                     res.status(201).json({
                         message: "Usuario creado correctamente.",
-                        result: resp
+                        data: resp
                     });
                 })
                 .catch(e => {
@@ -70,20 +72,22 @@ exports.login = async (req, res) => {
             { expiresIn: Number(process.env.JWT_REFRESH_TOKEN_EXP) } 
         );
 
-        // Date.now() + milisegundos
+        // Encriptar el refresh token para guardar en bbdd
+        const init_vector = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv(crypto_algorithm, process.env.BCRYPT_SECRET, init_vector);
+        const encriptedRefreshToken = cipher.update(refreshToken, 'utf8', 'base64') + cipher.final('base64');
+
         const refreshTokenExpiryDate = new Date(Date.now() + (Number(process.env.JWT_REFRESH_TOKEN_EXP) * 1000));
-        // let expiryDate = new Date();
-        // expiryDate.setSeconds(expiryDate.getSeconds() + expiresIn); 
 
         // Insertar o actualizar (si existe) refresToken en BBDD.
         const values = {
-            token: refreshToken,
+            token: encriptedRefreshToken,
+            init_vector: init_vector.toString('base64'),
             expiryDate: refreshTokenExpiryDate,
             usuario_id: user.id
         };
         const options = {
             where: { usuario_id: user.id },
-            //returning: true,
         };
         RefreshToken.upsert(values, options)
             .catch(e => console.log(e));
@@ -96,17 +100,17 @@ exports.login = async (req, res) => {
                 { 
                     httpOnly: true,
                     sameSite: 'strict', //sameSite: 'None'
-                    // expires: Date - Fecha expiración en GMT (Si no se incluye, caduca con la sesión).
-                    expires: refreshTokenExpiryDate,
-                    // maxAge: 30 * 1000 // Tiempo expiración en milisegundos
-                    // secure=true // secure=true => Cookie sólo para HTTPS
+                    expires: refreshTokenExpiryDate, // Si no se incluye, caduca con la sesión
+                    // secure=true // secure=true => Cookie sólo para HTTPS TODO
                 }
             ) 
-            // .header('Authorization', accessToken)
             .json({
-                accessToken: accessToken,
-                usuario_id: user.id,
-                // access_token_expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP) 
+                message: "Logueado correctamente.",
+                data: {
+                    accessToken: accessToken,
+                    usuario_id: user.id,
+                    expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP) 
+                }
             })
     } catch (e) {
         console.log("Error al loguear: ", e);
@@ -117,29 +121,47 @@ exports.login = async (req, res) => {
     };
 };
 
-// Se usa error 403, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
+// "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
 exports.refreshToken = async (req, res) => {
 
     const refreshToken = req.cookies['refreshToken'];
     if (!refreshToken) {
-        return res.status(403).json({
-            message: "No se ha adjuntado token de refresco."
+        return res.status(401).json({
+            message: "No se ha adjuntado token de refresco.",
+            error: INVALID_REF_TOKEN
         });
     }
 
     try {
-        let refreshTokenDB = await RefreshToken.findOne({ where: { token: refreshToken } });
+        const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY);
+        const usuario_id = decoded.userId;
+
+        let refreshTokenDB = await RefreshToken.findOne({ where: { usuario_id: usuario_id } });
         if(!refreshTokenDB){
-            return res.status(403).json({ 
-                message: "El token de refresco no se encuentra en la Base de Datos." 
+            return res.status(401).json({ 
+                message: "El token de refresco no se encuentra en la Base de Datos.",
+                error: INVALID_REF_TOKEN
+            });
+        }
+
+        // Desencriptar y comprobar que el token es correcto
+        const init_vector = Buffer.from(refreshTokenDB.init_vector, 'base64');
+        const decipher = crypto.createDecipheriv(crypto_algorithm, process.env.BCRYPT_SECRET, init_vector);
+        const decryptedData = decipher.update(refreshTokenDB.token, 'base64', 'utf8') + decipher.final('utf8');
+        if(decryptedData !== refreshToken) {
+            RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
+            return res.status(401).json({
+                message: "El token de refresco no es válido.",
+                error: INVALID_REF_TOKEN
             });
         }
 
         // Comprobar expiración según expiryDate en BBDD
         if(refreshTokenDB.expiryDate.getTime() < new Date().getTime()) {
             RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
-            return res.status(403).json({
+            return res.status(401).json({
                 message: "El token de refresco ha expirado.",
+                error: INVALID_REF_TOKEN
             });
         }     
 
@@ -152,9 +174,12 @@ exports.refreshToken = async (req, res) => {
         );
 
         return res.status(200).json({
-            accessToken: newAccessToken,
-            usuario_id: usuario.id,
-            // access_token_expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP)
+            message: "Nuevo accessToken generado correctamente.",
+            data: {
+                accessToken: newAccessToken,
+                usuario_id: usuario.id,
+                expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP) 
+            }
         });
 
     } catch(e) {
