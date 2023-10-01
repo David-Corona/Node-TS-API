@@ -133,7 +133,7 @@ exports.refreshToken = async (req, res) => {
     }
 
     try {
-        const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY);
+        const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY); // TODO - Eliminar, ya lo hacemos en middleware => req.usuario_id
         const usuario_id = decoded.userId;
 
         let refreshTokenDB = await RefreshToken.findOne({ where: { usuario_id: usuario_id } });

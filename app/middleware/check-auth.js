@@ -15,7 +15,8 @@ module.exports = (req, res, next) => {
     if (err) {
       return catchError(err, res);
     }
-    // req.userId = decoded.id; 
+    req.usuario_id = decoded.userId; // TODO - añadir usuario_id al request
+    console.log("Usuario ID: ", req.usuario_id);
     next();
   });
 }

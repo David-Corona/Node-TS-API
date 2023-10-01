@@ -8,6 +8,7 @@ module.exports = {
       {
         nombre: 'Test',
         email: 'test@test.com',
+        role: 'user',
         password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -15,6 +16,7 @@ module.exports = {
       {
         nombre: 'David',
         email: 'test@hotmail.com',
+        role: 'user',
         password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -22,6 +24,7 @@ module.exports = {
       {
         nombre: 'Admin',
         email: 'corona_121@hotmail.com',
+        role: 'admin',
         password: '123456',
         createdAt: new Date(),
         updatedAt: new Date()
