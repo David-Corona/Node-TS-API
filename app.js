@@ -4,9 +4,11 @@ const Sequelize = require("sequelize");
 const cors = require("cors");
 require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
 var cookieParser = require('cookie-parser');
+const { handleError } = require('./app/helpers/error')
 
-const usuariosRoutes = require("./app/routes/usuarios.routes");
-const authRoutes = require("./app/routes/auth.routes");
+// const usuariosRoutes = require("./app/routes/user/usuarios.routes");
+// const authRoutes = require("./app/routes/user/auth.routes");
+const routes = require('./app/routes');
 
 const app = express();
 
@@ -39,7 +41,13 @@ sequelize.authenticate().then(async () => {
     console.error('No se ha podido conectar a la base de datos: ', error);
 });
 
-app.use("/api/usuarios", usuariosRoutes);
-app.use("/api/auth", authRoutes);
+// app.use("/api/usuarios", usuariosRoutes);
+// app.use("/api/auth", authRoutes);
+app.use('/', routes);
+
+// Error handling - last middleware
+app.use((err, req, res, next) => {
+    handleError(err, res);
+});
 
 module.exports = app;

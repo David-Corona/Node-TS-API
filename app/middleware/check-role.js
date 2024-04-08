@@ -2,6 +2,7 @@ const Usuario = require('../models').Usuario;
 
 module.exports = async (req, res, next) => {
     try {
+        // TODO: Service - isAdmin(req.body.email)
         const usuario = await Usuario.findOne({where: {id: req.usuario_id}});
         if (usuario.role == 'admin') {
             next();

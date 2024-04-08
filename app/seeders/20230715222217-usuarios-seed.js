@@ -3,13 +3,14 @@ const bcrypt = require("bcrypt");
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface) {
     const arrayUsuarios = [
       {
         nombre: 'Test',
         email: 'test@test.com',
         role: 'user',
         password: '123456',
+        is_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -18,6 +19,7 @@ module.exports = {
         email: 'test@hotmail.com',
         role: 'user',
         password: '123456',
+        is_active: false,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -26,6 +28,7 @@ module.exports = {
         email: 'corona_121@hotmail.com',
         role: 'admin',
         password: '123456',
+        is_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -38,7 +41,7 @@ module.exports = {
     queryInterface.bulkInsert('usuarios', arrayUsuarios, {});
   },
 
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface) {
     queryInterface.bulkDelete('usuarios', null, {});
   }
 };

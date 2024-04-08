@@ -1,5 +1,6 @@
 const express = require("express");
-const AuthController = require("../controllers/auth.controller");
+const AuthController = require("../../controllers/user/auth.controller");
+const AdminAuthController = require("../../controllers/admin/auth.controller"); // TODO - remove
 
 const router = express.Router();
 router.post("/registro", AuthController.registro);

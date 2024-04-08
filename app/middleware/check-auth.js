@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
   // Comprueba sólo accessToken => Al devolver 401, interceptor de front llamará a refreshToken.
   const accessToken = req.headers.authorization.split(" ")[1]; // Bearer sfdsfstoken
   if (!accessToken) { 
-    return res.status(401).json({message: "No Autorizado: Access Token no encontrado."});
+    return res.status(401).json({message: "No Autenticado: Access Token no encontrado."});
   }
 
   jwt.verify(accessToken, process.env.JWT_PRIVATE_KEY, (err, decoded) => {
@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
 
 const catchError = (err, res) => { 
   if (err instanceof TokenExpiredError) {
-    return res.status(401).send({ message: "No Autorizado: Acces Token expirado." });
+    return res.status(401).send({ message: "No Autenticado: Acces Token expirado." });
   }
-  return res.status(401).send({ message: "No Autorizado; Access Token inválido." });
+  return res.status(401).send({ message: "No Autenticado; Access Token inválido." });
 }
