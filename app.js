@@ -47,6 +47,7 @@ app.use('/', routes);
 
 // Error handling - last middleware
 app.use((err, req, res, next) => {
+    console.log("Middleware error");
     handleError(err, res);
 });
 

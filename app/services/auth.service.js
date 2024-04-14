@@ -16,12 +16,10 @@ const crypto_algorithm = "aes-128-cbc";
 class AuthService {
 
   async register(nombre, email, password, role, is_active) {
-
     const usuario = await Usuario.findOne({ where: { email }})
     if (usuario) {
       throw new ErrorHandler(400, "El email ya está en uso.");
     }
-
     try {
       const hashedPassword = await bcrypt.hash(password, Number(process.env.BCRYPT_SALT));
 
@@ -32,8 +30,7 @@ class AuthService {
         role,
         is_active
       });
-  
-      newUsuario.save();
+      await newUsuario.save();
     } catch (error) {
       throw new ErrorHandler(500, "Server Error.", error.message);
     }
@@ -105,6 +102,16 @@ class AuthService {
     }
   }
 
+  // TODO: not throwing error, no need?
+  async logout(usuario_id) {
+    try {
+      await RefreshToken.destroy({ where: { usuario_id } });
+    } catch(error) {
+      // OK aunque no se borre => Al hacer nuevo login, se sobrescribe.
+      console.error("Error al eliminar refreshToken: ", error.message);
+    }
+  }
+
   // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
   async refreshToken(refreshToken) {
     try {
@@ -150,13 +157,14 @@ class AuthService {
     }
   }
 
-  async isAdmin(email) {
-    const user = await Usuario.findOne({ where: { email } });
-    if (!user) {
-      return false;
-    }
-    return user.role === "admin";
-  }
+  // TODO - Delete (checkRole middleware)
+  // async isAdmin(email) {
+  //   const user = await Usuario.findOne({ where: { email } });
+  //   if (!user) {
+  //     return false;
+  //   }
+  //   return user.role === "admin";
+  // }
 
   async forgotPassword(email, ) {
     try {
@@ -170,7 +178,7 @@ class AuthService {
       // Si ya existe un token para el usuario, eliminarlo.
       let existingToken = await ResetToken.findOne({ where: { usuario_id: user.id } });
       if(existingToken){
-          await existingToken.destroy();
+        await existingToken.destroy();
       }
 
       // Generar string/token y hashear
@@ -184,7 +192,7 @@ class AuthService {
         token: hashedToken,
         expiryDate: tokenExpiryDate
       })
-      resetToken.save()
+      await resetToken.save()
         .catch(e => {
             console.log("Error al crear token de reseteo de contraseña: ", e);
             throw new ErrorHandler(500, "Error al guardar token", e);

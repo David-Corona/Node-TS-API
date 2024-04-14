@@ -73,18 +73,18 @@ exports.refreshToken = async (req, res, next) => {
     }
 };
 
+// TODO - No need to try/catch
 exports.logout = async (req, res, next) => {
-    try {
+    // try {
         if(req.body.usuario_id) { 
-            RefreshToken.destroy({ where: { usuario_id: req.body.usuario_id } });
+            await authService.logout(req.body.usuario_id);
         }
-        // OK aunque no se borre => Al hacer nuevo login, se sobrescribe.
         return res.status(200).json({
             message: "Deslogueado correctamente.",
         });
-    } catch(error) {
-        next(error);
-    }
+    // } catch(error) {
+    //     next(error);
+    // }
 };
 
 exports.forgotPassword = async (req, res, next) => { 

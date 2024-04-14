@@ -8,7 +8,6 @@ exports.registro = async (req, res, next) => {
   try {
       const { nombre, email, password } = req.body;
       const response = await authService.register(nombre, email, password, "admin", false);
-
       return res.status(201).json({
           message: "Usuario creado correctamente.",
           data: response,
@@ -18,37 +17,39 @@ exports.registro = async (req, res, next) => {
   }
 };
 
-exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+// exports.login = async (req, res, next) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const isAdmin = await authService.isAdmin(email);
-    if (!isAdmin) {
-      throw new ErrorHandler(403, "No autorizado.", "No corresponde a un usuario admin")
-    }
+//     // TODO - Done from Middleware checkRole, so maybe reuse non admin
 
-    const result = await authService.login(email, password);
+//     // const isAdmin = await authService.isAdmin(email);
+//     // if (!isAdmin) {
+//     //   throw new ErrorHandler(403, "No autorizado.", "No corresponde a un usuario admin")
+//     // }
 
-    res.status(200)
-    .cookie("refreshToken", result.refreshToken, {
-      httpOnly: true,
-      sameSite: "strict",
-      expires: result.refreshTokenExpiryDate,
-    })
-    .json({
-      message: "Logueado correctamente.",
-      data: {
-        accessToken: result.accessToken,
-        usuario_id: result.userId,
-        usuario_rol: result.userRole,
-        expires_in: result.expiresIn
-      },
-    });
+//     const result = await authService.login(email, password);
 
-  } catch(error) {
-    next(error);
-  }
-};
+//     res.status(200)
+//     .cookie("refreshToken", result.refreshToken, {
+//       httpOnly: true,
+//       sameSite: "strict",
+//       expires: result.refreshTokenExpiryDate,
+//     })
+//     .json({
+//       message: "Logueado correctamente.",
+//       data: {
+//         accessToken: result.accessToken,
+//         usuario_id: result.userId,
+//         usuario_rol: result.userRole,
+//         expires_in: result.expiresIn
+//       },
+//     });
+
+//   } catch(error) {
+//     next(error);
+//   }
+// };
 
 // exports.refreshToken = async (req, res, next) => {
 //   try {
