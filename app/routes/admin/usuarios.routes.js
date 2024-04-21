@@ -1,9 +1,9 @@
 const express = require("express");
-const UsuariosController = require("../../controllers//user/usuarios.controller");
+const UsuariosAdminController = require("../../controllers/admin/usuarios.controller");
 const checkAuth =  require("../../middleware/check-auth");
 const checkRole = require("../../middleware/check-role");
 
 const router = express.Router();
-router.get("/", checkAuth, checkRole, UsuariosController.findAll); 
+router.get("/", UsuariosAdminController.findAll); // TODO - Añadir  checkAuth, checkRole
 
 module.exports = router;

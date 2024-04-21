@@ -1,10 +1,10 @@
 const Usuario = require('../models').Usuario;
 
-module.exports = async (req, res, next) => {
+export const checkRole: CustomRequestHandler = async (req, res, next) => { 
     try {
         let usuario;
-        if(req.body.usuario_id){
-            usuario = await Usuario.findOne({where: {id: req.body.usuario_id}});
+        if(req.usuario_id){
+            usuario = await Usuario.findOne({where: {id: req.usuario_id}});
         } else if (req.body.email){
             usuario = await Usuario.findOne({where: {email: req.body.email}});
         }

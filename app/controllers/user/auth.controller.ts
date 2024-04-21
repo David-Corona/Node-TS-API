@@ -2,6 +2,7 @@
 // const jwt = require("jsonwebtoken");
 // const crypto = require("crypto");
 // const { Op } = require("sequelize");
+import { RequestHandler } from 'express';
 
 const authService = require("../../services/auth.service");
 // const Usuario = require('../../models').Usuario;
@@ -14,8 +15,7 @@ const INVALID_REF_TOKEN = "invalid-refreshtoken";
 // const crypto_algorithm = "aes-128-cbc";
 
 
-
-exports.registro = async (req, res, next) => {
+export const registro: CustomRequestHandler = async (req, res, next) => {
     try {
         const { nombre, email, password } = req.body;
         const response = await authService.register(nombre, email, password, "user", true);
@@ -29,7 +29,7 @@ exports.registro = async (req, res, next) => {
     }
 };
 
-exports.login = async (req, res, next) => {
+export const login: CustomRequestHandler = async (req, res, next) => {
     try {
         const result = await authService.login(req.body.email, req.body.password);
 
@@ -55,7 +55,7 @@ exports.login = async (req, res, next) => {
 };
 
 // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
-exports.refreshToken = async (req, res, next) => {
+export const refreshToken: CustomRequestHandler = async (req, res, next) => {
     try {
         const refreshToken = req.cookies['refreshToken'];
         if (!refreshToken) {
@@ -74,7 +74,7 @@ exports.refreshToken = async (req, res, next) => {
 };
 
 // TODO - No need to try/catch
-exports.logout = async (req, res, next) => {
+export const logout: CustomRequestHandler = async (req, res, next) => {
     // try {
         if(req.body.usuario_id) { 
             await authService.logout(req.body.usuario_id);
@@ -87,7 +87,7 @@ exports.logout = async (req, res, next) => {
     // }
 };
 
-exports.forgotPassword = async (req, res, next) => { 
+export const forgotPassword: CustomRequestHandler = async (req, res, next) => { 
     try {
         await authService.forgotPassword(req.body.email);
 
@@ -99,7 +99,7 @@ exports.forgotPassword = async (req, res, next) => {
     }
 }
 
-exports.resetPassword = async (req, res, next) => { 
+export const resetPassword: CustomRequestHandler = async (req, res, next) => {
     try {
         await authService.resetPassword(req.body.usuario_id, req.body.token, req.body.password);
         res.status(200).json({

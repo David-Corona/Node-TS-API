@@ -1,10 +1,11 @@
-const authService = require("../../services/auth.service");
+import authService from '../../services/auth.service';
+
 const { ErrorHandler } = require('../../helpers/error')
 // const RefreshToken = require('../../models').UsuarioToken;
 // const INVALID_REF_TOKEN = "invalid-refreshtoken";
 
 
-exports.registro = async (req, res, next) => {
+export const registro: CustomRequestHandler = async (req, res, next) => {
   try {
       const { nombre, email, password } = req.body;
       const response = await authService.register(nombre, email, password, "admin", false);

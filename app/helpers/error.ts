@@ -1,6 +1,11 @@
+import { Response } from 'express';
 
 class ErrorHandler extends Error {
-    constructor(statusCode = 500, message = "Internal Server Error", details = null) {
+    statusCode: number;
+    message: string;
+    details?: string;
+    
+    constructor(statusCode = 500, message = "Internal Server Error", details: string | undefined) {
       super();
       this.statusCode = statusCode;
       this.message = message;
@@ -8,9 +13,9 @@ class ErrorHandler extends Error {
     }
 }
 
-const handleError = (err, res) => {
-    const { statusCode, message, details } = err;
-    const errorResponse = {
+const handleError = (err: ErrorHandler, res: Response) => {
+    const { statusCode = 500, message = "Server Error", details } = err;
+    const errorResponse: any = {
         status: "error",
         statusCode,
         message,
