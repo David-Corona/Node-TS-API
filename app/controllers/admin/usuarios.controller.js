@@ -1,7 +1,6 @@
-const Usuario = require('../../models').Usuario;
-const usuariosService = require('../../services/usuarios.service');
+import usuariosService from '../../services/usuarios.service';
 
-export const findAll: CustomRequestHandler = async (req, res, next) => {
+export const findAll = async (req, res, next) => {
     try {
         const result = await usuariosService.listAll();
 

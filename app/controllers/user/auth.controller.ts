@@ -4,18 +4,21 @@
 // const { Op } = require("sequelize");
 import { RequestHandler } from 'express';
 
-const authService = require("../../services/auth.service");
+import authService from '../../services/auth.service';
+
+// const authService = require("../../services/auth.service");
 // const Usuario = require('../../models').Usuario;
-const RefreshToken = require('../../models').UsuarioToken;
+// const RefreshToken = require('../../models').UsuarioToken;
 // const ResetToken = require('../../models').UsuarioResetPassword;
 // const sendEmail = require('../../utils/Emails/sendEmail');
-const { ErrorHandler } = require('../../helpers/error')
+// const { ErrorHandler } = require('../../helpers/error')
+import { ErrorHandler } from '../../helpers/error';
 
 const INVALID_REF_TOKEN = "invalid-refreshtoken";
 // const crypto_algorithm = "aes-128-cbc";
 
 
-export const registro: CustomRequestHandler = async (req, res, next) => {
+export const registro: RequestHandler = async (req, res, next) => {
     try {
         const { nombre, email, password } = req.body;
         const response = await authService.register(nombre, email, password, "user", true);
@@ -29,7 +32,7 @@ export const registro: CustomRequestHandler = async (req, res, next) => {
     }
 };
 
-export const login: CustomRequestHandler = async (req, res, next) => {
+export const login: RequestHandler = async (req, res, next) => {
     try {
         const result = await authService.login(req.body.email, req.body.password);
 
@@ -55,7 +58,7 @@ export const login: CustomRequestHandler = async (req, res, next) => {
 };
 
 // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
-export const refreshToken: CustomRequestHandler = async (req, res, next) => {
+export const refreshToken: RequestHandler = async (req, res, next) => {
     try {
         const refreshToken = req.cookies['refreshToken'];
         if (!refreshToken) {
@@ -74,7 +77,7 @@ export const refreshToken: CustomRequestHandler = async (req, res, next) => {
 };
 
 // TODO - No need to try/catch
-export const logout: CustomRequestHandler = async (req, res, next) => {
+export const logout: RequestHandler = async (req, res, next) => {
     // try {
         if(req.body.usuario_id) { 
             await authService.logout(req.body.usuario_id);
@@ -87,7 +90,7 @@ export const logout: CustomRequestHandler = async (req, res, next) => {
     // }
 };
 
-export const forgotPassword: CustomRequestHandler = async (req, res, next) => { 
+export const forgotPassword: RequestHandler = async (req, res, next) => { 
     try {
         await authService.forgotPassword(req.body.email);
 
@@ -99,7 +102,7 @@ export const forgotPassword: CustomRequestHandler = async (req, res, next) => {
     }
 }
 
-export const resetPassword: CustomRequestHandler = async (req, res, next) => {
+export const resetPassword: RequestHandler = async (req, res, next) => {
     try {
         await authService.resetPassword(req.body.usuario_id, req.body.token, req.body.password);
         res.status(200).json({

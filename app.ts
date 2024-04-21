@@ -1,16 +1,28 @@
-const express = require('express'); 
-const Sequelize = require("sequelize");
-// const dbConfig = require("./config/config.json"); // TODO
-const cors = require("cors");
-require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
-var cookieParser = require('cookie-parser');
-const { handleError } = require('./app/helpers/error')
+// import { RequestHandler } from "express";
 
-// const usuariosRoutes = require("./app/routes/user/usuarios.routes");
-// const authRoutes = require("./app/routes/user/auth.routes");
-const routes = require('./app/routes');
+import express from 'express';
+import { Dialect, Sequelize } from 'sequelize';
+import cors from "cors";
+import dotenv from "dotenv";
+import cookieParser from 'cookie-parser';
+
+import { handleError } from './app/helpers/error';
+import routes from './app/routes';
+
+// const express = require('express'); 
+// const Sequelize = require("sequelize");
+// // const dbConfig = require("./config/config.json"); // TODO
+// const cors = require("cors");
+// require('dotenv').config(); // Guardar/cargar variables/credenciales del entorno
+// var cookieParser = require('cookie-parser');
+// const { handleError } = require('./app/helpers/error')
+
+// // const usuariosRoutes = require("./app/routes/user/usuarios.routes");
+// // const authRoutes = require("./app/routes/user/auth.routes");
+// const routes = require('./app/routes');
 
 const app = express();
+dotenv.config();
 
 // TODO - configurar CORS
 // app.use(cors()); // esto permite todas las conexiones.
@@ -26,18 +38,18 @@ app.use(cookieParser()); // parse cookies (añade req.cookies)
 // app.use(express.urlencoded({ extended: true }));
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+    process.env.DB_NAME || '',
+    process.env.DB_USER || '',
+    process.env.DB_PASSWORD || '',
     {
-        host: process.env.DB_HOST,
-        dialect: process.env.DB_DIALECT,
+        host: process.env.DB_HOST || '',
+        dialect: process.env.DB_DIALECT as Dialect || 'mysql',
     }   
 );
 
 sequelize.authenticate().then(async () => {
     console.log('Conectado a la base de datos!');
-}).catch((error) => {
+}).catch((error: any) => {
     console.error('No se ha podido conectar a la base de datos: ', error);
 });
 
@@ -46,8 +58,14 @@ sequelize.authenticate().then(async () => {
 app.use('/', routes);
 
 // Error handling - last middleware
-app.use((err, req, res, next) => {
+const errorHandler: any = (err: any, req: any, res: any, next: any) => {
     handleError(err, res);
-});
+};
+app.use(errorHandler);
+// app.use((err, req, res, next) => {
+//     handleError(err, res);
+// });
 
-module.exports = app;
+
+// module.exports = app;
+export default app;

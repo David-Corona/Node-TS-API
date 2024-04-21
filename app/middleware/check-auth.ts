@@ -1,8 +1,10 @@
-import { Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 const { TokenExpiredError } = jwt;
 
-export const checkAuthMiddleware = async (req, res, next) => {
+
+
+export const checkAuth: RequestHandler = async (req: any, res, next) => { // TODO
   // TODO - ¿Devolver 401 para que Front llame a refreshToken o llamar desde aquí?
   // Comprueba sólo accessToken => Al devolver 401, interceptor de front llamará a refreshToken.
   const accessToken = req.headers.authorization?.split(" ")[1]; // Bearer sfdsfstoken
@@ -10,20 +12,22 @@ export const checkAuthMiddleware = async (req, res, next) => {
     return res.status(401).json({message: "No Autenticado: Access Token no encontrado."});
   }
 
-  jwt.verify(accessToken, process.env.JWT_PRIVATE_KEY, (err, decoded) => {
+  jwt.verify(accessToken, process.env.JWT_PRIVATE_KEY as any, (err: any, decoded: any) => { //TODO
     if (err) {
       return catchError(err, res);
     }
-    req.usuario_id = decoded.userId; // TODO - añadir usuario_id al request
+    // req.usuario_id = decoded.userId; // TODO - añadir usuario_id al request
     console.log("Usuario ID: ", req.usuario_id);
     next();
   });
 }
 
 // const catchError = (err: Error, res: Response) => { 
-const catchError = (err, res) => { 
+const catchError = (err: any, res: any) => {  //TODO
   if (err instanceof TokenExpiredError) {
     return res.status(401).send({ message: "No Autenticado: Acces Token expirado." });
   }
   return res.status(401).send({ message: "No Autenticado; Access Token inválido." });
 }
+
+// module.exports = checkAuth;
