@@ -1,4 +1,4 @@
-import { Usuario } from '../models';
+import Usuario from '../models/usuario.model';
 import { ErrorHandler } from '../helpers/error';
 // const Usuario = require('../models').Usuario;
 // const { ErrorHandler } = require('../helpers/error')
@@ -10,7 +10,7 @@ class UsuariosService {
   async listAll() {
     try {
       // const usuario = await Usuario.findOne({ where: { email }})
-      const usuarios = await Usuario.findAll()
+      const usuarios = await Usuario.findAll();
       return usuarios;
 
     } catch(error: any) {
