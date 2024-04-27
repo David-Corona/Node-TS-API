@@ -5,7 +5,7 @@ export class ErrorHandler extends Error {
     message: string;
     details?: string;
     
-    constructor(statusCode = 500, message = "Internal Server Error", details: string | undefined) {
+    constructor(statusCode = 500, message = "Internal Server Error", details?: string) {
       super();
       this.statusCode = statusCode;
       this.message = message;

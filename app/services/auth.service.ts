@@ -1,21 +1,21 @@
-
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { Op } = require("sequelize");
-
-const Usuario = require('../models').Usuario;
-const RefreshToken = require('../models').UsuarioToken;
-const ResetToken = require('../models').UsuarioResetPassword;
-const { ErrorHandler } = require('../helpers/error')
-const sendEmail = require('../utils/Emails/sendEmail');
+import bcrypt from 'bcrypt';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import crypto from 'crypto';
+import { Op } from "sequelize";
+import Usuario from '../models/usuario.model'
+import RefreshToken from '../models/usuarioToken.model';
+import ResetToken from '../models/usuarioResetPassword.model';
+import { ErrorHandler } from '../helpers/error';
+import sendEmail from '../utils/Emails/sendEmail';
 
 const INVALID_REF_TOKEN = "invalid-refreshtoken";
 const crypto_algorithm = "aes-128-cbc";
 
+
+
 class AuthService {
 
-  async register(nombre, email, password, role, is_active) {
+  async register(nombre: string, email: string, password: string, role: string, is_active: boolean) {
     const usuario = await Usuario.findOne({ where: { email }})
     if (usuario) {
       throw new ErrorHandler(400, "El email ya está en uso.");
@@ -31,12 +31,12 @@ class AuthService {
         is_active
       });
       await newUsuario.save();
-    } catch (error) {
+    } catch (error: any) {
       throw new ErrorHandler(500, "Server Error.", error.message);
     }
   }
 
-  async login(email, password) {
+  async login(email: string, password: string) {
     try {
       const user = await Usuario.findOne({ where: { email } });
       if (!user) {
@@ -54,12 +54,12 @@ class AuthService {
 
       const accessToken = jwt.sign(
         { email: user.email, userId: user.id },
-        process.env.JWT_PRIVATE_KEY,
+        process.env.JWT_PRIVATE_KEY!,
         { expiresIn: Number(process.env.JWT_ACCESS_TOKEN_EXP) }
       );
       const refreshToken = jwt.sign(
         { email: user.email, userId: user.id },
-        process.env.JWT_PRIVATE_KEY,
+        process.env.JWT_PRIVATE_KEY!,
         { expiresIn: Number(process.env.JWT_REFRESH_TOKEN_EXP) }
       );
 
@@ -67,7 +67,7 @@ class AuthService {
       const init_vector = crypto.randomBytes(16);
       const cipher = crypto.createCipheriv(
         crypto_algorithm,
-        process.env.BCRYPT_SECRET,
+        process.env.BCRYPT_SECRET!,
         init_vector
       );
       const encriptedRefreshToken =
@@ -84,10 +84,11 @@ class AuthService {
         expiryDate: refreshTokenExpiryDate,
         usuario_id: user.id,
       };
-      const options = {
-        where: { usuario_id: user.id },
-      };
-      await RefreshToken.upsert(values, options);
+      // const options = {
+      //   where: { usuario_id: user.id },
+      // };
+      // Sequelize knows if to find/update according to constraints
+      await RefreshToken.upsert(values); //options
 
       return {
         accessToken,
@@ -97,25 +98,25 @@ class AuthService {
         userRole: user.role,
         expiresIn: Number(process.env.JWT_ACCESS_TOKEN_EXP)
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new ErrorHandler(401, "Error al intentar loguear", error.message);
     }
   }
 
   // TODO: not throwing error, no need?
-  async logout(usuario_id) {
+  async logout(usuario_id: number) {
     try {
       await RefreshToken.destroy({ where: { usuario_id } });
-    } catch(error) {
+    } catch(error: any) {
       // OK aunque no se borre => Al hacer nuevo login, se sobrescribe.
       console.error("Error al eliminar refreshToken: ", error.message);
     }
   }
 
   // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
-  async refreshToken(refreshToken) {
+  async refreshToken(refreshToken: string) {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY); // TODO - Eliminar, ya lo hacemos en middleware => req.usuario_id
+      const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY!) as JwtPayload; // TODO - Eliminar, ya lo hacemos en middleware => req.usuario_id
       const usuario_id = decoded.userId;
 
       const refreshTokenDB = await RefreshToken.findOne({ where: { usuario_id } });
@@ -125,7 +126,7 @@ class AuthService {
 
       // Desencriptar y comprobar que el token es correcto
       const init_vector = Buffer.from(refreshTokenDB.init_vector, 'base64');
-      const decipher = crypto.createDecipheriv(crypto_algorithm, process.env.BCRYPT_SECRET, init_vector);
+      const decipher = crypto.createDecipheriv(crypto_algorithm, process.env.BCRYPT_SECRET!, init_vector);
       const decryptedData = decipher.update(refreshTokenDB.token, 'base64', 'utf8') + decipher.final('utf8');
       if (decryptedData !== refreshToken) {
         await RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
@@ -138,11 +139,15 @@ class AuthService {
         throw new Error("El token de refresco ha expirado.");
       }
 
-      const usuario = await refreshTokenDB.getUsuario(); // getUsuario() función de sequelize (por la relación)
+      const usuario = await refreshTokenDB.$get('usuario');
+      if(!usuario){
+        throw new Error("El token de refresco no tiene un usuario válido.");
+      }
+      // const usuario = await refreshTokenDB.getUsuario(); // getUsuario() función de sequelize (por la relación)
       // const usuario = Usuario.findOne({ where: { id: refreshTokenDB.id } })
       const newAccessToken = jwt.sign(
         { email: usuario.email, userId: usuario.id },
-        process.env.JWT_PRIVATE_KEY,
+        process.env.JWT_PRIVATE_KEY!,
         { expiresIn: Number(process.env.JWT_ACCESS_TOKEN_EXP) }
       );
 
@@ -152,7 +157,7 @@ class AuthService {
         usuario_rol: usuario.role,
         expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP)
       };
-    } catch (error) { // Catches errors, and reconverts+adds details
+    } catch (error: any) { // Catches errors, and reconverts+adds details
       throw new ErrorHandler(401, error.message, INVALID_REF_TOKEN)
     }
   }
@@ -166,7 +171,7 @@ class AuthService {
   //   return user.role === "admin";
   // }
 
-  async forgotPassword(email, ) {
+  async forgotPassword(email: string) {
     try {
 
       const user = await Usuario.findOne({ where: { email }})
@@ -206,12 +211,12 @@ class AuthService {
         "./Templates/resetPassword.handlebars"
       )
   
-    } catch (error) {
+    } catch (error: any) {
       throw new ErrorHandler(500, "Error al enviar email.", error.message);
     }
   }
 
-  async resetPassword(usuario_id, token, password) {
+  async resetPassword(usuario_id: number, token: string, password: string) {
     try {
 
       let resetToken = await ResetToken.findOne({ where: { usuario_id, expiryDate: { [Op.gt]: new Date(Date.now()) } } });
@@ -236,10 +241,11 @@ class AuthService {
         await resetToken.destroy();
       })
 
-    } catch (error) {
+    } catch (error: any) {
       throw new ErrorHandler(500, "Error al resetear contraseña", error.message);
     }
   }
 }
 
-module.exports = new AuthService();
+
+export default new AuthService();
