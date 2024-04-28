@@ -1,9 +1,11 @@
-'use strict';
-const bcrypt = require("bcrypt");
+// 'use strict';
+// const bcrypt = require("bcrypt");
+import bcrypt from 'bcrypt';
+import { QueryInterface } from 'sequelize';
 
-/** @type {import('sequelize-cli').Migration} */
+// /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface) {
+  async up (queryInterface: QueryInterface) {
     const arrayUsuarios = [
       {
         nombre: 'Test',
@@ -41,7 +43,7 @@ module.exports = {
     queryInterface.bulkInsert('usuarios', arrayUsuarios, {});
   },
 
-  async down (queryInterface) {
-    queryInterface.bulkDelete('usuarios', null, {});
+  async down (queryInterface: QueryInterface) {
+    queryInterface.bulkDelete('usuarios', {}, {});
   }
 };

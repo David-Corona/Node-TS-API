@@ -5,7 +5,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node server.ts",
-    "dev": "nodemon server.ts"
+    "dev": "nodemon server.ts",
+    "migrate": "ts-node ./node_modules/sequelize-cli/lib/sequelize db:migrate",
+    "migrate-undo-all": "ts-node ./node_modules/sequelize-cli/lib/sequelize db:migrate:undo:all",
+    "seed": "ts-node ./node_modules/sequelize-cli/lib/sequelize db:seed:all"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +37,7 @@
     "@types/node": "^20.12.7",
     "@types/validator": "^13.11.9",
     "nodemon": "^3.0.1",
+    "sequelize-cli": "6.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }

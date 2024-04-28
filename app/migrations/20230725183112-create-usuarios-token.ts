@@ -1,41 +1,40 @@
-'use strict';
+import { QueryInterface, DataTypes } from 'sequelize';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: QueryInterface) {
 
     await queryInterface.createTable('usuarios_token', {
       id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false
       },
       token: {
-        type: Sequelize.TEXT,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       init_vector: {
-        type: Sequelize.STRING(100),
+        type: DataTypes.STRING(100),
         allowNull: false
       },
       usuario_id: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         unique: true
       },
       expiryDate: { 
-        type: Sequelize.DATE, 
+        type: DataTypes.DATE, 
         allowNull: false,
       },
       createdAt: {
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         allowNull: false
       }
     });
   },
 
-  async down (queryInterface) {
+  async down (queryInterface: QueryInterface) {
     await queryInterface.dropTable('usuarios_token');
   }
 };

@@ -1,4 +1,5 @@
-const Usuario = require('../models').Usuario;
+// const Usuario = require('../models').Usuario;
+import Usuario from '../models/usuario.model'
 import { RequestHandler } from 'express';
 
 export const checkRole: RequestHandler = async (req: any, res, next) => {  //TODORequestHandler

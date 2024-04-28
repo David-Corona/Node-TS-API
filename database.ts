@@ -1,24 +1,28 @@
-// require('dotenv').config();
-import { config } from 'dotenv';
-config();
+// import { config } from 'dotenv';
+// config();
+// import dotenv from "dotenv";
+// import { Dialect } from "sequelize";
+// dotenv.config()
+require('dotenv').config();
 
-interface DatabaseConfig {
-    username: string;
-    password: string;
-    database: string;
-    host: string;
-    dialect: string;
-    // use_env_variable?: string;
-  }
+// interface DatabaseConfig {
+//     username: string;
+//     password: string;
+//     database: string;
+//     host: string;
+//     dialect: string;
+//     // use_env_variable?: string;
+//   }
 
-const databaseConfig: { [key: string]: DatabaseConfig } = {
+const config = { //: { [key: string]: DatabaseConfig }
     development: {
         username: process.env.DB_USER || '',
         password: process.env.DB_PASSWORD || '',
         database: process.env.DB_NAME || '',
         host: process.env.DB_HOST || '',
-        dialect: process.env.DB_DIALECT || ''
-    },
+        dialect: process.env.DB_DIALECT || 'mysql'
+    }
+
     // test: {
     //     username: process.env.DB_USER,
     //     password: process.env.DB_PASSWORD,
@@ -35,4 +39,8 @@ const databaseConfig: { [key: string]: DatabaseConfig } = {
     // }
 }; 
 
-export { databaseConfig, DatabaseConfig };
+// module.exports = { databaseConfig };
+// export { databaseConfig };
+// export { databaseConfig, DatabaseConfig };
+// export default databaseConfig;
+module.exports = config;

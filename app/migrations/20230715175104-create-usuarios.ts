@@ -1,47 +1,48 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
+import { QueryInterface, DataTypes } from 'sequelize';
+// const { DataTypes } = require('sequelize');
+
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface: QueryInterface) {
     await queryInterface.createTable('usuarios', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: DataTypes.INTEGER
       },
       nombre: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: DataTypes.STRING
       },
       email: {
         allowNull: false,
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         unique: true
       },
       role: {
         allowNull: false,
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         defaultValue: "user"
       },
       password: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: DataTypes.STRING
       },
       is_active: {
         allowNull: false,
-        type: Sequelize.BOOLEAN
+        type: DataTypes.BOOLEAN
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: DataTypes.DATE
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: DataTypes.DATE
       }
     });
   },
-  async down(queryInterface) {
+  async down(queryInterface: QueryInterface) {
     await queryInterface.dropTable('usuarios');
   }
 };
