@@ -26,7 +26,3 @@ export const handleError = (err: ErrorHandler, res: Response) => {
 
     res.status(statusCode).json(errorResponse);
 };
-
-// module.exports = {
-//     ErrorHandler, handleError
-// }

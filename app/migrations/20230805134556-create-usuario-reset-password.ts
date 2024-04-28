@@ -1,8 +1,8 @@
 import { QueryInterface, DataTypes } from 'sequelize';
 
+
 module.exports = {
   async up(queryInterface: QueryInterface) {
-
     await queryInterface.createTable('usuarios_reset_password', {
       id: {
         allowNull: false,
@@ -28,6 +28,7 @@ module.exports = {
       }
     });
   },
+
   async down(queryInterface: QueryInterface) {
     await queryInterface.dropTable('usuarios_reset_password');
   }

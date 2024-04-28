@@ -1,5 +1,3 @@
-// const app = require("./app");
-// const http = require("http");
 import app from "./app";
 import http from "http";
 

@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType, BelongsTo, ForeignKey, PrimaryKey, AutoIncrement, AllowNull, Unique, Default} from 'sequelize-typescript';
 import Usuario from './usuario.model';
 
+
 @Table({
   modelName: 'UsuarioToken',
   tableName: 'usuarios_token',

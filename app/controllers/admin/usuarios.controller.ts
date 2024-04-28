@@ -1,6 +1,8 @@
+import { RequestHandler } from 'express';
 import usuariosService from '../../services/usuarios.service';
 
-export const findAll = async (req, res, next) => {
+
+export const findAll: RequestHandler = async (req, res, next) => {
     try {
         const result = await usuariosService.listAll(); //findAndCountAll
 
@@ -12,6 +14,3 @@ export const findAll = async (req, res, next) => {
         next(error);
     }
 };
-
-
-

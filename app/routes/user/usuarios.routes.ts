@@ -1,14 +1,11 @@
-// const express = require("express");
 import express from 'express';
-// const UsuariosController = require("../../controllers//user/usuarios.controller");
-// import * as UsuariosController from '../../controllers/user/usuarios.controller';
-// import findAll from '../../controllers/user/usuarios.controller';
-// const checkAuth =  require("../../middleware/check-auth");
+import * as UsuariosController from '../../controllers/user/usuarios.controller';
 import { checkAuth } from '../../middleware/check-auth';
+import { checkRole } from '../../middleware/check-role';
+
 
 const router = express.Router();
-// router.get("/", UsuariosController.findAll);  //checkAuth
-// router.get("/", findAll);  //checkAuth
+router.get("/", checkAuth, checkRole, UsuariosController.findAll);
 
-// module.exports = router;
+
 export default router;

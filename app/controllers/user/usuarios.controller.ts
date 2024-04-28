@@ -1,13 +1,17 @@
+import { RequestHandler } from 'express';
+import usuariosService from '../../services/usuarios.service';
 
 
-// exports.findAll = (req, res) => {
-//     Usuario.findAll() 
-//         .then(result => {
-//             res.status(200).send(result);
-//         })
-//         .catch(err => {
-//             res.status(500).send({
-//                 message: err.message || "Error al intentar obtener los usuarios."
-//             });
-//         });
-// };
+export const findAll: RequestHandler = async (req, res, next) => {
+    try {
+        const result = await usuariosService.listAll(); //findAndCountAll
+
+        return res.status(200).json({
+            message: "Usuarios listados correctamente.",
+            data: result,
+        });
+    } catch(error) {
+        next(error);
+    }
+};
+

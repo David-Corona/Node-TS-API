@@ -1,7 +1,4 @@
-// import { config } from 'dotenv';
-// config();
 // import dotenv from "dotenv";
-// import { Dialect } from "sequelize";
 // dotenv.config()
 require('dotenv').config();
 
@@ -22,7 +19,6 @@ const config = { //: { [key: string]: DatabaseConfig }
         host: process.env.DB_HOST || '',
         dialect: process.env.DB_DIALECT || 'mysql'
     }
-
     // test: {
     //     username: process.env.DB_USER,
     //     password: process.env.DB_PASSWORD,
@@ -39,8 +35,5 @@ const config = { //: { [key: string]: DatabaseConfig }
     // }
 }; 
 
-// module.exports = { databaseConfig };
-// export { databaseConfig };
-// export { databaseConfig, DatabaseConfig };
-// export default databaseConfig;
+
 module.exports = config;

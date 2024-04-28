@@ -1,5 +1,5 @@
 import { QueryInterface, DataTypes } from 'sequelize';
-// const { DataTypes } = require('sequelize');
+
 
 module.exports = {
   async up(queryInterface: QueryInterface) {
@@ -42,6 +42,7 @@ module.exports = {
       }
     });
   },
+  
   async down(queryInterface: QueryInterface) {
     await queryInterface.dropTable('usuarios');
   }

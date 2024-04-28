@@ -1,9 +1,7 @@
-// 'use strict';
-// const bcrypt = require("bcrypt");
 import bcrypt from 'bcrypt';
 import { QueryInterface } from 'sequelize';
 
-// /** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
   async up (queryInterface: QueryInterface) {
     const arrayUsuarios = [

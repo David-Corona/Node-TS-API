@@ -1,11 +1,12 @@
-// const Usuario = require('../models').Usuario;
+import { Response, NextFunction } from 'express';
+import { ExtendedRequest } from '../helpers/types';
 import Usuario from '../models/usuario.model'
-import { RequestHandler } from 'express';
 
-export const checkRole: RequestHandler = async (req: any, res, next) => {  //TODORequestHandler
+
+export const checkRole = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
     try {
         let usuario;
-        if(req.usuario_id){ //TODO
+        if(req.usuario_id){
             usuario = await Usuario.findOne({where: {id: req.usuario_id}});
         } else if (req.body.email){
             usuario = await Usuario.findOne({where: {email: req.body.email}});
@@ -21,6 +22,3 @@ export const checkRole: RequestHandler = async (req: any, res, next) => {  //TOD
         return res.status(403).json({ message: "Sin permisos" });
     }
 };
-
-// module.exports = checkRole;
-// export default checkRole;

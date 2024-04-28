@@ -12,7 +12,6 @@ const INVALID_REF_TOKEN = "invalid-refreshtoken";
 const crypto_algorithm = "aes-128-cbc";
 
 
-
 class AuthService {
 
   async register(nombre: string, email: string, password: string, role: string, is_active: boolean) {
@@ -103,20 +102,18 @@ class AuthService {
     }
   }
 
-  // TODO: not throwing error, no need?
   async logout(usuario_id: number) {
     try {
       await RefreshToken.destroy({ where: { usuario_id } });
     } catch(error: any) {
-      // OK aunque no se borre => Al hacer nuevo login, se sobrescribe.
       console.error("Error al eliminar refreshToken: ", error.message);
     }
   }
 
-  // "invalid-refreshtoken" en 401, para que interceptor de Front no vuelva a llamar a refreshToken (llama cuando hay error 401).
+ // "invalid-refreshtoken" message in 401 => Interceptor checks this message to avoid trying to refreshToken request again.
   async refreshToken(refreshToken: string) {
     try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY!) as JwtPayload; // TODO - Eliminar, ya lo hacemos en middleware => req.usuario_id
+      const decoded = jwt.verify(refreshToken, process.env.JWT_PRIVATE_KEY!) as JwtPayload;
       const usuario_id = decoded.userId;
 
       const refreshTokenDB = await RefreshToken.findOne({ where: { usuario_id } });
@@ -124,7 +121,7 @@ class AuthService {
         throw new Error("El token de refresco no se encuentra en la Base de Datos.");
       }
 
-      // Desencriptar y comprobar que el token es correcto
+      // Decrypt and check token is correct
       const init_vector = Buffer.from(refreshTokenDB.init_vector, 'base64');
       const decipher = crypto.createDecipheriv(crypto_algorithm, process.env.BCRYPT_SECRET!, init_vector);
       const decryptedData = decipher.update(refreshTokenDB.token, 'base64', 'utf8') + decipher.final('utf8');
@@ -133,18 +130,17 @@ class AuthService {
         throw new Error("El token de refresco no es válido.");
       }
 
-      // Comprobar expiración según expiryDate en BBDD
+      // Check if expired according to expiryDate in DB
       if (refreshTokenDB.expiryDate.getTime() < new Date().getTime()) {
         await RefreshToken.destroy({ where: { id: refreshTokenDB.id } });
         throw new Error("El token de refresco ha expirado.");
       }
 
-      const usuario = await refreshTokenDB.$get('usuario');
+      const usuario = await refreshTokenDB.$get('usuario'); // get function built from the association
+      // const usuario = Usuario.findOne({ where: { id: refreshTokenDB.id } })
       if(!usuario){
         throw new Error("El token de refresco no tiene un usuario válido.");
       }
-      // const usuario = await refreshTokenDB.getUsuario(); // getUsuario() función de sequelize (por la relación)
-      // const usuario = Usuario.findOne({ where: { id: refreshTokenDB.id } })
       const newAccessToken = jwt.sign(
         { email: usuario.email, userId: usuario.id },
         process.env.JWT_PRIVATE_KEY!,
@@ -157,20 +153,12 @@ class AuthService {
         usuario_rol: usuario.role,
         expires_in: Number(process.env.JWT_ACCESS_TOKEN_EXP)
       };
-    } catch (error: any) { // Catches errors, and reconverts+adds details
+    } catch (error: any) {
       throw new ErrorHandler(401, error.message, INVALID_REF_TOKEN)
     }
   }
 
-  // TODO - Delete (checkRole middleware)
-  // async isAdmin(email) {
-  //   const user = await Usuario.findOne({ where: { email } });
-  //   if (!user) {
-  //     return false;
-  //   }
-  //   return user.role === "admin";
-  // }
-
+  // TODO - Convert in to upsert()
   async forgotPassword(email: string) {
     try {
 
@@ -179,19 +167,18 @@ class AuthService {
         throw new ErrorHandler(404, "Usuario no encontrado.");
       }
 
-      // TODO - Tambien se puede hacer crear o actualizar, para ahorrar un query
-      // Si ya existe un token para el usuario, eliminarlo.
+      // If another token, delete it.
       let existingToken = await ResetToken.findOne({ where: { usuario_id: user.id } });
       if(existingToken){
         await existingToken.destroy();
       }
 
-      // Generar string/token y hashear
+      // Generate string/token & hash
       let token = crypto.randomBytes(32).toString("hex");
       const hashedToken = await bcrypt.hash(token, Number(process.env.BCRYPT_SALT));
       const tokenExpiryDate = new Date(Date.now() + (Number(process.env.RESET_PASS_TOKEN_EXP) * 1000));
 
-      // Guardar token hasheado en BBDD
+      // Save in DB
       const resetToken = new ResetToken({
         usuario_id: user.id,
         token: hashedToken,
@@ -203,7 +190,7 @@ class AuthService {
             throw new ErrorHandler(500, "Error al guardar token", e);
         });
 
-      // enviar Email (destinatario, asunto, variables a introducir en template, template)
+      // send Email (to_email, subject, variables to add to template, template)
       await sendEmail(
         user.email,
         "Reset Contraseña",
@@ -237,7 +224,7 @@ class AuthService {
         }
       })
       .then(async () => {
-        // TODO - Enviar email de confirmación
+        // TODO - Send confirmation email?
         await resetToken.destroy();
       })
 

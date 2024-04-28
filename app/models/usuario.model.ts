@@ -1,6 +1,7 @@
-import { Table, Column, Model, HasOne, PrimaryKey, AutoIncrement, AllowNull, Unique, IsEmail, Default, IsIn} from 'sequelize-typescript';
+import { Table, Column, Model, HasOne, PrimaryKey, AutoIncrement, AllowNull, Unique, IsEmail, Default, IsIn, DataType } from 'sequelize-typescript';
 import UsuarioToken from './usuarioToken.model';
 import UsuarioResetPassword from './usuarioResetPassword.model';
+
 
 @Table({
   modelName: 'Usuario',
@@ -38,6 +39,14 @@ export default class Usuario extends Model {
   @AllowNull(false)
   @Column
   is_active!: boolean;
+
+  @Default(DataType.NOW)
+  @Column
+  createdAt!: Date;
+
+  @Default(DataType.NOW)
+  @Column
+  updatedAt!: Date;
 
 
   @HasOne(() => UsuarioToken, "usuario_id")
